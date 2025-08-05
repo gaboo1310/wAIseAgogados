@@ -1,0 +1,477 @@
+.gradient-section {
+    width: 100%;
+    flex-direction: column;
+    height: 3285px; /* Altura ajustable */
+    display: flex;
+    align-items: center;
+    background: 
+      linear-gradient(
+        180deg,         /* Dirección del gradiente */
+        #000000,       /* Color 1 */
+        #000000,       /* Color 2 */
+        #96969D,       /* Color 3 */
+        #999999        /* Color 4 */
+      );
+    color: white;
+    position: relative; /* Para asegurarse de que respete su espacio */
+    gap: 0px;
+  }
+  
+  .gradient-content h2 {
+    text-align: center;
+    font-family: open sans;
+    font-size: 64px;
+    font-weight: 600;
+    margin-bottom: 6rem;
+    left: 140px;
+    margin-top: 248px;
+  }
+  
+  .gradient-content p {
+    font-size: 1.2rem;
+    line-height: 1.5;
+  }
+
+  .top-left-words {
+    font-family: karla;
+    position: absolute;
+    top: 100px;
+    left: 230px;
+    font-size: 25px;
+    color: white; /* Ajusta el color según sea necesario */
+    border-bottom: 2px solid white; /* Línea debajo */
+    border-right: 2px solid white; /* Línea al lado derecho */
+    padding-right: 10px; /* Espacio entre el texto y la línea derecha */
+    padding-bottom: 5px;
+  }
+
+  .architecture-section {
+    width: 100%;
+    margin: 50px 100px;
+    color: white;
+    background-color: transparent; /* Fondo transparente */
+    border: 2px solid white; /* Borde blanco */
+    border-radius: 15px; /* Bordes redondeados */
+    padding: 20px; /* Espacio interno */
+    box-shadow: none; /* Sin sombra */
+    position: relative; /* Para posicionar el contenido internamente */
+  }
+  
+  .architecture-section h3 {
+    font-family: open sans;
+    position: absolute;
+    top: -12px; /* Ajusta según sea necesario */
+    left: 20px; /* Ajusta según sea necesario */
+    text-align: left;
+    font-weight: 600;
+    font-size: 32px;
+    margin-bottom: 10px;
+    padding: 15px;
+  }
+  
+  .architecture-section ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .architecture-section li {
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+    line-height: 1.5;
+  }
+  
+  
+  .cta-section {
+    text-align: center;
+    margin-top: 50px;
+    font-size: 2rem;
+    color: white;
+  }
+
+  .hover-container {
+    position: relative;
+    display: inline-block; /* Asegura que los elementos se posicionen juntos */
+    width: 100%; /* Ajusta según tus necesidades */
+    height: auto;
+  }
+
+  .security-image {
+    position: absolute;
+    top: 32%;
+    left: 9.4%;
+    font-family: Open Sans;
+    font-size: 96px;
+    font-weight: 500;
+    line-height: 100px;
+    letter-spacing: -4%;
+    z-index: 2;
+    opacity: 0.5;
+    transition: opacity 0.5s;
+  }
+
+  .hover-container:hover .security-image,
+  .hover-container:hover .opaco {
+    opacity: 1;
+    transition: opacity 0.5s;
+  }
+
+  .card {
+    background-color: transparent; /* Fondo transparente */
+    border: 2px solid white; /* Borde blanco */
+    border-radius: 15px; /* Bordes redondeados */
+    padding: 200px 280px; /* Espacio interno */
+    width: 1100px;
+    margin: 20px; /* Espacio externo */
+    box-shadow: none; /* Sin sombra */
+    color: white; /* Color del texto */
+    align-self: flex-start;
+    left: 210px;
+    position: relative;
+  }
+
+  .card-image {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100px; /* Ajusta el tamaño según necesites */
+    height: auto;
+    border-radius: 50%; /* Opcional, si quieres un diseño redondo */
+    z-index: 10; /* Asegura que esté sobre el contenido */
+  }
+
+
+  @media (min-width: 320px) and (max-width: 480px){
+    .gradient-section {
+      width: 100%;
+      flex-direction: column;
+      height: 4264px; /* Altura ajustable */
+      display: flex;
+      align-items: center;
+      background: 
+        linear-gradient(
+          180deg,         /* Dirección del gradiente */
+          #000000,       /* Color 1 */
+          #000000,       /* Color 2 */
+          #96969D,       /* Color 3 */
+          #999999        /* Color 4 */
+        );
+      color: white;
+      position: relative; /* Para asegurarse de que respete su espacio */
+      gap: 0px;
+    }
+
+    .gradient-content h2 {
+      text-align: center;
+      font-family: open sans;
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 6rem;
+      left: 140px;
+      margin-top: 248px;
+    }
+
+    .card {
+      background-color: transparent; /* Fondo transparente */
+      border: 2px solid white; /* Borde blanco */
+      border-radius: 15px; /* Bordes redondeados */
+      padding: 56px 75px; /* Espacio interno */
+      width: 290px;
+      margin: 20px; /* Espacio externo */
+      box-shadow: none; /* Sin sombra */
+      color: white; /* Color del texto */
+      align-self: flex-start;
+      left: -5px;
+      position: relative;
+    }
+
+    .architecture-section h3 {
+      font-family: open sans;
+      position: absolute;
+      top: -12px; /* Ajusta según sea necesario */
+      left: 10px; /* Ajusta según sea necesario */
+      text-align: left;
+      font-weight: 600;
+      font-size: 7px;
+      margin-bottom: 10px;
+      line-height: 10px;
+    }
+
+    .top-left-words {
+      font-family: karla;
+      position: absolute;
+      top: 100px;
+      left: 20px;
+      font-size: 25px;
+      color: white; /* Ajusta el color según sea necesario */
+      border-bottom: 2px solid white; /* Línea debajo */
+      border-right: 2px solid white; /* Línea al lado derecho */
+      padding-right: 10px; /* Espacio entre el texto y la línea derecha */
+      padding-bottom: 5px;
+    }
+  
+    .top-left-words2 {
+      font-family: karla;
+      position:absolute;
+      top: 730px;
+      left: 20px;
+      font-size: 25px;
+      color: white; /* Ajusta el color según sea necesario */
+      border-bottom: 2px solid white; /* Línea debajo */
+      border-right: 2px solid white; /* Línea al lado derecho */
+      padding-right: 10px; /* Espacio entre el texto y la línea derecha */
+      padding-bottom: 5px;
+    }
+
+    .security-section {
+      margin: 160px 100px;
+      color: white;
+      margin-right: 222px;
+    }
+
+    .security-section h3 {
+      font-family: open sans;
+      font-size: 48px;
+      margin-bottom: 50px;
+      margin-left: 120px;
+      line-height: 50px;
+   }
+
+    .security-image {
+      position: absolute;
+      top: -10%;
+      left: 9.4%;
+      font-family: Open Sans;
+      font-size: 30px;
+      font-weight: 500;
+      line-height: 100px;
+      letter-spacing: -4%;
+      z-index: 2;
+      opacity: 0.5;
+      transition: opacity 0.5s;
+    }
+
+  }
+
+  @media (min-width: 481px) and (max-width: 768px){
+    .gradient-section {
+      width: 100%;
+      flex-direction: column;
+      height: 4265px; /* Altura ajustable */
+      display: flex;
+      align-items: center;
+      background: 
+        linear-gradient(
+          180deg,         /* Dirección del gradiente */
+          #000000,       /* Color 1 */
+          #000000,       /* Color 2 */
+          #96969D,       /* Color 3 */
+          #999999        /* Color 4 */
+        );
+      color: white;
+      position: relative; /* Para asegurarse de que respete su espacio */
+      gap: 0px;
+    }
+
+    .gradient-content h2 {
+      text-align: center;
+      font-family: open sans;
+      font-size: 34px;
+      font-weight: 600;
+      margin-bottom: 6rem;
+      left: 140px;
+      margin-top: 248px;
+    }
+  
+    .security-section {
+      margin: 160px 100px;
+      color: white;
+      margin-right: 222px;
+    }
+
+    .security-section h3 {
+      font-family: open sans;
+      font-size: 48px;
+      margin-bottom: 50px;
+      margin-left: 120px;
+      line-height: 50px;
+   }
+  
+    .security-image {
+      position: absolute;
+      top: 19%;
+      left: 9.4%;
+      font-family: Open Sans;
+      font-size: 40px;
+      font-weight: 500;
+      line-height: 100px;
+      letter-spacing: -4%;
+      z-index: 2;
+      opacity: 0.5;
+      transition: opacity 0.5s;
+    }
+  
+    .top-left-words {
+      font-family: karla;
+      position: absolute;
+      top: 100px;
+      left: 20px;
+      font-size: 25px;
+      color: white; /* Ajusta el color según sea necesario */
+      border-bottom: 2px solid white; /* Línea debajo */
+      border-right: 2px solid white; /* Línea al lado derecho */
+      padding-right: 10px; /* Espacio entre el texto y la línea derecha */
+      padding-bottom: 5px;
+    }
+  
+    .top-left-words2 {
+      font-family: karla;
+      position:absolute;
+      top: 900px;
+      left: 20px;
+      font-size: 25px;
+      color: white; /* Ajusta el color según sea necesario */
+      border-bottom: 2px solid white; /* Línea debajo */
+      border-right: 2px solid white; /* Línea al lado derecho */
+      padding-right: 10px; /* Espacio entre el texto y la línea derecha */
+      padding-bottom: 5px;
+    }
+  
+    .card {
+      background-color: transparent; /* Fondo transparente */
+      border: 2px solid white; /* Borde blanco */
+      border-radius: 15px; /* Bordes redondeados */
+      padding: 100px 140px; /* Espacio interno */
+      width: 440px;
+      margin: 20px; /* Espacio externo */
+      box-shadow: none; /* Sin sombra */
+      color: white; /* Color del texto */
+      align-self: flex-start;
+      left: 8px;
+      position: relative;
+    }
+  
+    .architecture-section h3 {
+      font-family: open sans;
+      position: absolute;
+      top: -12px;
+      left: 0px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 20px;
+      margin-bottom: 10px;
+      line-height: 30px;
+    } 
+  }
+
+@media (min-width:769px) and (max-width: 1024px){
+
+  .gradient-section {
+    width: 100%;
+    flex-direction: column;
+    height: 3924px; /* Altura ajustable */
+    display: flex;
+    align-items: center;
+    background: 
+      linear-gradient(
+        180deg,         /* Dirección del gradiente */
+        #000000,       /* Color 1 */
+        #000000,       /* Color 2 */
+        #96969D,       /* Color 3 */
+        #999999        /* Color 4 */
+      );
+    color: white;
+    position: relative; /* Para asegurarse de que respete su espacio */
+    gap: 0px;
+  }
+
+  .gradient-content h2 {
+    text-align: center;
+    font-family: open sans;
+    font-size: 34px;
+    font-weight: 600;
+    margin-bottom: 6rem;
+    left: 140px;
+    margin-top: 248px;
+  }
+
+  .security-section {
+    margin: 160px 100px;
+    color: white;
+    margin-right: 222px;
+  }
+
+  .security-section h3 {
+    font-family: open sans;
+    font-size: 48px;
+    margin-bottom: 50px;
+    margin-left: 100px;
+    line-height: 50px;
+ }
+
+  .security-image {
+    position: absolute;
+    top: 20%;
+    left: 9.4%;
+    font-family: Open Sans;
+    font-size: 50px;
+    font-weight: 500;
+    line-height: 100px;
+    letter-spacing: -4%;
+    z-index: 2;
+    opacity: 0.5;
+    transition: opacity 0.5s;
+  }
+
+  .top-left-words {
+    font-family: karla;
+    position: absolute;
+    top: 100px;
+    left: 20px;
+    font-size: 25px;
+    color: white; /* Ajusta el color según sea necesario */
+    border-bottom: 2px solid white; /* Línea debajo */
+    border-right: 2px solid white; /* Línea al lado derecho */
+    padding-right: 10px; /* Espacio entre el texto y la línea derecha */
+    padding-bottom: 5px;
+  }
+
+  .top-left-words2 {
+    font-family: karla;
+    position:absolute;
+    top: 900px;
+    left: 20px;
+    font-size: 25px;
+    color: white; /* Ajusta el color según sea necesario */
+    border-bottom: 2px solid white; /* Línea debajo */
+    border-right: 2px solid white; /* Línea al lado derecho */
+    padding-right: 10px; /* Espacio entre el texto y la línea derecha */
+    padding-bottom: 5px;
+  }
+
+  .card {
+    background-color: transparent; /* Fondo transparente */
+    border: 2px solid white; /* Borde blanco */
+    border-radius: 15px; /* Bordes redondeados */
+    padding: 130px 20px; /* Espacio interno */
+    width: 600px;
+    margin: 20px; /* Espacio externo */
+    box-shadow: none; /* Sin sombra */
+    color: white; /* Color del texto */
+    align-self: flex-start;
+    left: 70px;
+    position: relative;
+  }
+
+  .architecture-section h3 {
+    font-family: open sans;
+    position: absolute;
+    top: -12px; /* Ajusta según sea necesario */
+    left: 20px; /* Ajusta según sea necesario */
+    text-align: left;
+    font-weight: 600;
+    font-size: 22px;
+    margin-bottom: 10px;
+  }
+
+}

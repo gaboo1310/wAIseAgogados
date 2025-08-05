@@ -1,0 +1,1 @@
+// Interfaces cleaned - only wAIse chat functionality remains

@@ -1,0 +1,446 @@
+.white-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  background-color: white;
+  position: relative;
+  height: 120%; /* Hace que cubra al menos la altura de la ventana */
+  padding-bottom: 100px; /* Espacio adicional para evitar que quede ajustado */
+  box-sizing: border-box; /* Incluye padding en el cálculo del tamaño */
+}
+
+
+.top-left-words3 {
+  font-family: karla;
+  position: absolute;
+  top: 180px;
+  left: 230px;
+  font-size: 25px;
+  color: rgb(0, 0, 0); /* Ajusta el color según sea necesario */
+  border-bottom: 2px solid rgb(0, 0, 0); /* Línea debajo */
+  border-right: 2px solid rgb(0, 0, 0); /* Línea al lado derecho */
+  padding-right: 10px; /* Espacio entre el texto y la línea derecha */
+  padding-bottom: 5px;
+}
+
+.section-title {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 36px;
+  font-weight: 600;
+  text-align: center;
+  margin-left: -570px;
+  margin-bottom: 100px;
+  margin-top: 300px;
+  color: black;
+}
+
+/* Contenedor para organizar */
+.absolute-container {
+  display: grid;
+  position: relative;
+  width: 100%;
+  height: 100px;
+}
+
+.container-card {
+display: grid;
+grid-template-columns: repeat(3, 1fr); 
+grid-auto-rows: minmax(100px, auto); 
+gap: 0px;
+width: calc(100% - 130px);
+margin-left: -40px;
+margin-right: 50px;
+}
+
+.container-card-main {
+display: flex;
+flex-direction: row;
+gap: 4px;
+margin-bottom: 10px;
+}
+
+.text-block1 {
+text-align: left;
+position: relative;
+width: 300px;
+height: 200px;
+}
+
+.text-block2 {
+  text-align: left;
+  position: relative;
+  width: 300px;
+  top: -10px; /* Ajusta la posición según desees */
+  left: 410px;
+  width: 301px;
+  height: 200px;
+}
+
+.text-block3 {
+  width: 290px;
+  position: relative;
+  top: -10px; /* Ajusta la posición según desees */
+  left: 620px;
+  width: 301px;
+  height: 200px;
+}
+
+.text-block1 h3{
+  line-height: 25px;
+  font-family: 'Open Sans';
+  top: -120px; /* Ajusta la posición según desees */
+  font-size: 18px;
+  width: 100%;
+  font-weight: 600;
+  color: black;
+  margin-bottom: 40px;
+}
+.text-block2 h3{
+  width: 100%;
+  top: -120px; 
+  left: 220px;
+  font-family: 'Open Sans';
+  font-size: 18px;
+  font-weight: 600;
+  color: black;
+}
+.text-block3 h3 {
+  width: 100%;
+  font-family: 'Open Sans';
+  font-size: 18px;
+  font-weight: 600;
+  color: black;
+  top: -120px; 
+  left: 470px;
+}
+
+.text-block1 h4{
+  font-family: 'Open Sans';
+  font-size: 32px;
+  font-weight: 700;
+  color: #999999;
+  margin-top: -15px;
+  margin-bottom: -5px;
+}
+.text-block2 h4{
+  font-family: 'Open Sans';
+  font-size: 32px;
+  font-weight: 700;
+  color:#999999;
+  margin-top: 10px;
+  margin-bottom: -5px;
+}
+.text-block3 h4 {
+  font-family: 'Open Sans';
+  font-size: 32px;
+  font-weight: 700;
+  color: #999999;
+  margin-top: 10px;
+  margin-bottom: -5px;
+}
+
+.text-block1 span{
+  font-family: 'Open Sans';
+  font-size: 14px;
+  font-weight: 700;
+  color: #999999;
+  margin-top: 40px;
+}
+.text-block2 span{
+  font-family: 'Open Sans';
+  font-size: 14px;
+  font-weight: 700;
+  color: #999999;
+  margin-top: -60px;
+  width: 100%;
+}
+.text-block3 span {
+  font-size: 14px;
+  font-family: 'Open Sans';
+  font-weight: 700;
+  color: #999999;
+  top: 40px;
+  width: 80%;
+}
+
+
+@media (min-width: 320px) and (max-width: 480px){
+
+  .white-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    background-color: white;
+    position: relative;
+    height: 220%; /* Hace que cubra al menos la altura de la ventana */
+    padding-bottom: 100px; /* Espacio adicional para evitar que quede ajustado */
+    box-sizing: border-box; /* Incluye padding en el cálculo del tamaño */
+  }
+
+  .section-title {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 36px;
+    font-weight: 600;
+    text-align: center;
+    margin-left: 0px;
+    margin-bottom: 100px;
+    margin-top: 300px;
+    color: black;
+  }
+
+  .top-left-words3 {
+    font-family: karla;
+    position: absolute;
+    top: 180px;
+    left: 20px;
+    font-size: 25px;
+    color: rgb(0, 0, 0); /* Ajusta el color según sea necesario */
+    border-bottom: 2px solid rgb(0, 0, 0); /* Línea debajo */
+    border-right: 2px solid rgb(0, 0, 0); /* Línea al lado derecho */
+    padding-right: 10px; /* Espacio entre el texto y la línea derecha */
+    padding-bottom: 5px;
+  }
+
+  .iconow1 {
+    width: 100px;
+    height: 129px;
+    top: 0px;
+    left: 20px;
+  }
+  
+  
+  .text-block1 {
+    text-align: left;
+    position: relative;
+    width: 180px;
+    height: 130px;
+  }
+
+  .text-block1 h3{
+    font-family: 'Open Sans';
+    top: -120px; /* Ajusta la posición según desees */
+    font-size: 10px;
+    width: 140px;
+    font-weight: 600;
+    color: black;
+    line-height: 10px;
+  }
+
+  .text-block1 h4{
+    font-family: 'Open Sans';
+    font-size: 22px;
+    font-weight: 700;
+    color: #999999;
+    margin-top: -15px;
+    margin-bottom: -5px;
+  }
+
+  .text-block1 span{
+    font-family: 'Open Sans';
+    font-size: 10px;
+    font-weight: 700;
+    color: #999999;
+    margin-top: 40px;
+    line-height: 1px;
+  }
+  
+  .footer-content small {
+    text-align: left;
+    position: relative;
+    font-family: "Open sans";
+    display: block;
+    margin-left: 170px;
+    font-weight: 700;
+    margin-top: 300px;
+    font-size: 15px;
+  }
+}
+
+@media (min-width: 481px) and (max-width: 768px){
+  .section-title {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 36px;
+    font-weight: 600;
+    text-align: center;
+    margin-left: 0px;
+    margin-bottom: 100px;
+    margin-top: 300px;
+    color: black;
+  }
+
+  .white-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    background-color: white;
+    position: relative;
+    height: 220%; /* Hace que cubra al menos la altura de la ventana */
+    padding-bottom: 100px; /* Espacio adicional para evitar que quede ajustado */
+    box-sizing: border-box; /* Incluye padding en el cálculo del tamaño */
+  }
+
+  .top-left-words3 {
+    font-family: karla;
+    position: absolute;
+    top: 180px;
+    left: 20px;
+    font-size: 25px;
+    color: rgb(0, 0, 0); /* Ajusta el color según sea necesario */
+    border-bottom: 2px solid rgb(0, 0, 0); /* Línea debajo */
+    border-right: 2px solid rgb(0, 0, 0); /* Línea al lado derecho */
+    padding-right: 10px; /* Espacio entre el texto y la línea derecha */
+    padding-bottom: 5px;
+  }
+
+  .iconow1 {
+    width: 150px;
+    height: 159px;
+    top: 0px;
+    left: 20px;
+  }
+  
+  
+  .text-block1 {
+    text-align: left;
+    position: relative;
+    width: 250px;
+    height: 130px;
+  }
+
+  .text-block1 h3{
+    font-family: 'Open Sans';
+    top: -120px; /* Ajusta la posición según desees */
+    font-size: 14px;
+    width: 100%;
+    font-weight: 600;
+    color: black;
+    line-height: 15px;
+  }
+
+  .text-block1 h4{
+    font-family: 'Open Sans';
+    font-size: 22px;
+    font-weight: 700;
+    color: #999999;
+    margin-top: -15px;
+    margin-bottom: -5px;
+  }
+
+  .text-block1 span{
+    font-family: 'Open Sans';
+    font-size: 12px;
+    font-weight: 700;
+    color: #999999;
+    margin-top: 40px;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px){
+  .section-title {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 36px;
+    font-weight: 600;
+    text-align: center;
+    margin-left: -170px;
+    margin-bottom: 100px;
+    margin-top: 300px;
+    color: black;
+  }
+
+  .top-left-words3 {
+    font-family: karla;
+    position: absolute;
+    top: 180px;
+    left: 60px;
+    font-size: 25px;
+    color: rgb(0, 0, 0); /* Ajusta el color según sea necesario */
+    border-bottom: 2px solid rgb(0, 0, 0); /* Línea debajo */
+    border-right: 2px solid rgb(0, 0, 0); /* Línea al lado derecho */
+    padding-right: 10px; /* Espacio entre el texto y la línea derecha */
+    padding-bottom: 5px;
+  }
+
+  .absolute-container {
+    display: flex;
+    position: relative;
+    width: 100%;
+    height: 100px;
+  }
+
+  .iconow1 {
+    width: 170px;
+    height: 179px;
+    top: 0px;
+    left: 20px;
+  }
+
+  .text-block1 {
+    text-align: left;
+    position: relative;
+    width: 180px;
+    height: 130px;
+  }
+
+  .text-block1 h3{
+    font-family: 'Open Sans';
+    top: -120px; /* Ajusta la posición según desees */
+    font-size: 13px;
+    width: 100%;
+    font-weight: 600;
+    color: black;
+    line-height: 15px;
+  }
+
+  .text-block1 h4{
+    font-family: 'Open Sans';
+    font-size: 22px;
+    font-weight: 700;
+    color: #999999;
+    margin-top: -15px;
+    margin-bottom: -5px;
+  }
+
+  .text-block1 span{
+    font-family: 'Open Sans';
+    font-size: 13px;
+    font-weight: 700;
+    color: #999999;
+    margin-top: 40px;
+  }
+
+}
+
+@media (min-width: 1024px) and (max-width: 1440px){
+  .white-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    background-color: white;
+    position: relative;
+    height: 160%; /* Hace que cubra al menos la altura de la ventana */
+    padding-bottom: 100px; /* Espacio adicional para evitar que quede ajustado */
+    box-sizing: border-box; /* Incluye padding en el cálculo del tamaño */
+  }
+}
+
+@media (max-width: 1360px) {
+  .container-card {
+    grid-template-columns: repeat(2, 1fr); 
+  }
+}
+
+@media (max-width: 1440px) {
+  .container-card {
+    grid-template-columns: repeat(2, 1fr); 
+  }
+}
+
+@media (max-width: 767px) {
+  .container-card {
+    grid-template-columns: 1fr; 
+  }
+}

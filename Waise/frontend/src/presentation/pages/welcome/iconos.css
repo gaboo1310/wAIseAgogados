@@ -1,0 +1,151 @@
+.icono-down {
+  width: 26px;
+  height: 15px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+.icono-up {
+  width: 15px;
+  height: 15px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+.icon-group {
+  position: absolute;
+  top: 56%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 1200px; /* Ajusta el tamaño según necesites */
+  height: auto;
+  z-index: 10; /* Asegura que esté sobre el contenido */
+}
+
+.opaco {
+  display: block;
+  margin-top: 20px;
+  bottom: 0; /* La alinea con la parte inferior */
+  left: 0; /* La alinea con el lado izquierdo */
+  width: 100%; /* Asegura que ocupe todo el ancho */
+  height: auto; /* Ajusta la altura proporcionalmente al ancho */
+  opacity: 0.5;
+  z-index: 2;
+}
+
+.iconow1 {
+  width: 195px;
+  height: 212px;
+  top: 0px;
+  left: 20px;
+}
+
+.iconow2 {
+  width: 195px;
+  height: 212px;
+  top: 0px;
+  left: 510px;
+}
+
+.iconow3 {
+  width: 195px;
+  height: 212px;
+  top: 0px;
+  left:1020px;
+}
+
+.matisi-logo {
+  align-items: start;
+  position: absolute;
+  width: 170px;
+  margin-top: 10px;
+  left: 245px;
+}
+
+@media (min-width: 769px) and (max-width: 1024px){
+
+  .icon-group {
+    position: absolute;
+    top: 60%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 580px; /* Ajusta el tamaño según necesites */
+    height: auto;
+    z-index: 10; /* Asegura que esté sobre el contenido */
+  }
+
+  .aws-logo {
+    display: inline-block;
+    width: 70px;
+    height: 40px;
+    margin-bottom: -20px;
+    vertical-align: middle; /* Esto lo alinea con el texto */
+  }
+
+}
+
+
+@media (min-width: 320px) and (max-width: 480px){
+  .icon-group {
+    position: absolute;
+    top: 55%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 300px; /* Ajusta el tamaño según necesites */
+    height: auto;
+    z-index: 10; /* Asegura que esté sobre el contenido */
+  }
+
+  .icono-down {
+    width: 10px;
+    height: 5px;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+
+  .icono-up {
+    width: 5px;
+    height: 5px;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+
+  .matisi-logo {
+    align-items: start;
+    position: absolute;
+    width: 170px;
+    margin-top: 10px;
+    left: 130px;
+  }
+
+  .aws-logo {
+    display: inline-block;
+    width: 50px;
+    height: 40px;
+    margin-bottom: -20px;
+    vertical-align: middle; /* Esto lo alinea con el texto */
+  }
+
+  
+}
+
+@media (min-width: 481Px) and (max-width: 768px){
+  .icon-group {
+    position: absolute;
+    top: 65%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 420px; /* Ajusta el tamaño según necesites */
+    height: auto;
+    z-index: 10; /* Asegura que esté sobre el contenido */
+  }
+
+  .aws-logo {
+    display: inline-block;
+    width: 60px;
+    height: 40px;
+    margin-bottom: -20px;
+    vertical-align: middle; /* Esto lo alinea con el texto */
+  }
+}
+

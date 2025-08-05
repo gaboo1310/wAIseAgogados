@@ -1,0 +1,370 @@
+
+  .save-button-sections{
+    justify-content: center;
+    display: flex;
+    width: 130px;
+    height: 30px;
+    background-color: black;
+    color: #f9f9f9;
+    border-radius: 15px;
+    padding: 5px 10px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    margin-left: auto;
+  }
+
+  .save-button-sections:hover{
+    background: #117E3F;
+    transition: 0.2s;
+  }
+
+  .subsection-card{
+    display: flex;
+    flex-direction: column;
+    align-items: left;
+    font-weight: bold;
+    text-align: center;
+    width:50%;
+    height: 90%;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #FFFFFF;
+    color: black;
+    padding: 10px;
+    border-radius: 8px;
+    z-index: 1002;
+    opacity: 0.97;
+    backdrop-filter: blur(35px);
+  }
+
+  .subsection-card-top{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-weight: bold;
+    text-align: center;
+    border-bottom: 1px solid #D9D9D9; /* Agrega una línea horizontal debajo */
+    width: 100%;
+  }
+  
+  .subsection-content {
+    margin-top: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* Ajusta el tamaño mínimo según sea necesario */
+    gap: 10px; /* Ajusta el espacio entre los elementos según sea necesario */
+    overflow-x: auto;
+    max-height: 100%; /* Ajusta la altura máxima según sea necesario */
+  }
+  
+  .subsection-content ul {
+    display: contents; /* Permite que los elementos li se dispongan directamente en el grid */
+    padding: 0;
+    margin: 0;
+    list-style: none; /* Elimina los puntos de la lista */
+  }
+  
+  .subsection-content li {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f9f9f9; /* Ajusta el color de fondo según sea necesario */
+    border: 1px solid #ccc; /* Ajusta el borde según sea necesario */
+    border-radius: 5px; /* Ajusta el radio del borde según sea necesario */
+  }
+  .back-arrow {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .back-arrow img {
+    width: 24px;
+    height: 24px;
+  }
+
+  .library-card{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-weight: bold;
+    text-align: center;
+    width:65%;
+    height: 90%;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #FFFFFF;
+    color: black;
+    padding: 10px;
+    border-radius: 8px;
+    z-index: 1001;
+    opacity: 0.97;
+    backdrop-filter: blur(35px);
+  }
+
+  .footer-library{
+    display: flex;
+    height: 100%;
+    width: 100%;
+    align-items: end;
+
+  }
+  .save-button-library{
+    justify-content: center;
+    display: flex;
+    width: 130px;
+    height: 30px;
+    background-color: black;
+    color: #f9f9f9;
+    border-radius: 15px;
+    padding: 5px 10px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    margin-left: auto;
+  }
+
+  .save-button-library:hover{
+    background: #117E3F;
+    transition: 0.2s;
+  }
+
+  .select-all-button-library{
+    justify-content: center;
+    display: flex;
+    width: 160px;
+    height: 30px;
+    background-color: black;
+    color: #f9f9f9;
+    border-radius: 15px;
+    padding: 5px 10px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    margin-right: 10px;
+  }
+
+  .select-all-button-library:hover{
+    background: #117E3F;
+    transition: 0.2s;
+  }
+
+
+  .reset-button-library {
+    justify-content: center;
+    display: flex;
+    width: 130px;
+    height: 30px;
+    background-color: black;
+    color: #f9f9f9;
+    border-radius: 15px;
+    padding: 5px 10px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    margin-right: auto;
+  }
+
+  .reset-button-library:hover{
+    background: #117E3F;
+    transition: 0.2s;
+  }
+
+  .library-card-top{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-weight: bold;
+    text-align: center;
+    border-bottom: 1px solid #D9D9D9; /* Agrega una línea horizontal debajo */
+    width: 100%;
+  }
+
+  .library-card-top h2{
+    color: #464646;
+    padding-bottom: 20px;
+    font-weight: 500;
+  }
+
+  .focusing-card{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-weight: bold;
+    text-align: center;
+    width:45%;
+    height: 70%;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #FFFFFFA6;
+    color: black;
+    padding: 10px;
+    border-radius: 8px;
+    z-index: 1001;
+    opacity: 0.97;
+    backdrop-filter: blur(35px);
+  }
+
+  .focusing-card-top{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-weight: bold;
+    text-align: center;
+    border-bottom: 1px solid #D9D9D9; /* Agrega una línea horizontal debajo */
+    width: 100%;
+  }
+
+  .focusing-card-top h2{
+    color: #464646;
+    padding-bottom: 20px;
+    font-weight: 500;
+  }
+
+  .focusing-icon{
+    width: 24px;
+    height: 24px;
+  }
+
+  .focus-input{
+    border-radius: 10px;
+    width: 100%;
+    height: 100%;
+    flex: 1;
+    padding: 20px;
+    border: none;
+    outline: none;
+    resize: none; /* Evita el redimensionamiento manual */
+    overflow-y: auto; /* Permite el desplazamiento vertical */
+  }
+
+  .save-button-focus {
+    position: absolute;
+    bottom: 10px;
+    right: 5px;
+    justify-content: center;
+    display: flex;
+    align-self: flex-end;
+    width: 130px;
+    height: 30px;
+    background-color: black;
+    color: #f9f9f9;
+    border-radius: 15px;
+    padding: 5px 10px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+
+  .save-button-focus:hover{
+    background: #117E3F;
+    transition: 0.2s;
+  }
+
+  .textarea-container {
+    display:flex;
+    flex-direction: column;
+    position: relative;
+    width: 100%;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+  }
+  
+
+  .options-button:focus{
+    transition: 0.2s;
+    background: #D9D9D9;
+  }
+  
+  .settings-icon {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .options-text-container {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+  }
+  
+  .options-text {
+    font-weight: 500;
+    font-size: 12px;
+  }
+  
+  .options-subtext {
+    font-size: 12px;
+    font-weight: 400;
+    color: #888;
+  }
+
+  .marval {
+    width: auto;
+    height: 50px;
+  }
+
+  .back-arrow {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .back-arrow img {
+    width: 24px;
+    height: 24px;
+  }
+
+
+  .chat-history {
+    width: 95%;
+    height: auto;
+    max-width: 600px; /* Ajusta el tamaño máximo del historial */
+    margin: 0 auto;  /* Centra el contenedor en la página */
+    margin-bottom: 10px;
+    padding: 10px;
+    background-color: #f9f9f9; /* Fondo claro para el historial */
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+  }
+  
+
+  .history-button {
+    width: 100%;
+    padding: 10px;
+    margin: 2px 0;
+    text-align: left;  /* Justifica el texto a la izquierda */
+    background-color: #ffffff;
+    border: 1px solid #ddd; /* Borde suave */
+    border-radius: 5px;
+    font-size: 12px;
+    color: #333;
+    cursor: pointer;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+  }
+
+  .history-button:hover {
+    background-color: #f1f1f1;
+    border-color: #bbb;
+  }
+  
+  .history-button:focus {
+    outline: none; /* Elimina el borde por defecto en enfoque */
+  }
+
+  .history-button:active {
+    background-color: #e0e0e0;
+    border-color: #999;
+  }

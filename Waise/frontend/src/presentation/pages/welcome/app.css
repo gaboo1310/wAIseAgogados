@@ -1,0 +1,469 @@
+/* styles.css */
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  color: white;
+  width: 100%;
+}
+
+.main-container {
+  width: 100%;
+  height: 110vh;
+  display: flex;
+  flex-direction: column;
+  background-image: url("../../../public/Fondowaise.png"); /* Cambia esto al nombre de tu imagen */
+  background-size:cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  left: 60px;
+  padding: 1rem rem;
+  position: relative;
+  width: 95%;
+  top: 0;
+  z-index: 10;
+}
+
+.navbar-line {
+  height: 2px; /* Grosor de la línea */
+  background-color: white; /* Color de la línea */
+  position: absolute;
+  bottom: 0; /* Posiciona la línea en la parte inferior del navbar */
+  left: -50px;
+  width: 83%; /* Asegura que cubra todo el ancho */
+  z-index: 9; /* Asegúrate de que esté debajo de otros elementos importantes */
+  margin-left: 135px;
+}
+
+.logo {
+  font-family: Karla;
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 60px;
+  letter-spacing: -0.04em;
+  margin-left: 92px;
+  text-align: left;
+  text-underline-position: from-font;
+  text-decoration-skip-ink: none;
+
+}
+
+.nav-links {
+  display: flex;
+  align-items: normal;
+  gap: 10px;
+  width: 520px;
+  margin-left: 10px; /* Reduce el margen izquierdo */
+  text-decoration: none;
+  color: white;
+  font-size: 6px;
+}
+
+.nav-links a {
+  display: flex;
+  margin-left: 2rem; /* Reduce el margen izquierdo */
+  text-decoration: none;
+  color: white;
+  font-size: 1rem;
+  align-items: center;
+}
+
+.login-button {
+  height: 45px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0.5rem 1rem;
+  border: 1px solid white;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  transition: 0.3s;
+  margin-right: 11rem; /* Mueve ligeramente el botón hacia la izquierda */
+}
+
+.login-button:hover {
+  background: white;
+  color: black;
+  cursor: pointer;
+}
+
+.hero {
+  margin-left: -400px;
+  justify-content: center;
+  flex: 1;
+  display: flex; 
+  align-items: center; 
+  text-align: left;
+  min-height: 100vh; 
+}
+
+.hero-content {
+  margin-left: 180px;
+  margin-top: -110px;
+  max-width: 1000px; /* Ajusta el ancho para que coincida con el diseñoo */
+}
+
+.hero-content h1 {
+  font-family: open sans;
+  text-align: left;
+  font-size: 64px; /* Ajusta el tamaño para que coincida con el diseño */
+  font-weight: bold;
+  margin-bottom: 0; /* Reducimos el margen entre el título y el subtítulo */
+  height: -10px;
+}
+
+.hero-content p {
+  font-family: open sans;
+  font-size: 60px; /* Ajusta el tamaño del subtítulo */
+  font-weight: 100; /* Da un estilo más ligero */
+  margin-top: 0; /* Reducimos el margen entre el subtítulo y el botón */
+  color: #EDEDED80;
+  height: -10px;
+}
+
+.cta-button {
+  display: flex;
+  align-items: normal;
+  padding: 0.75rem 2rem; /* Ajusta el tamaño del botón */
+  font-size: 1rem;
+  border: 1px solid white;
+  background: transparent;
+  color: white;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.cta-button:hover {
+  background: white;
+  color: black;
+}
+
+@media (min-width: 320px) and (max-width: 480px){
+
+  .logo {
+    font-family: Karla;
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 60px;
+    letter-spacing: -0.04em;
+    margin-left: -30px;
+    text-align: left;
+    text-underline-position: from-font;
+    text-decoration-skip-ink: none;
+  
+  }
+
+  .nav-links {
+    display: flex;
+    align-items: normal;
+    gap: 10px;
+    width: 200px;
+    margin-left: 10px; /* Reduce el margen izquierdo */
+    text-decoration: none;
+    color: white;
+    font-size: 6px;
+  }
+  
+  .nav-links a {
+    margin-left: 10px; /* Reduce el margen izquierdo */
+    text-decoration: none;
+    color: white;
+    font-size: 6px;
+  }
+  
+  .login-button {
+    padding: 0.5rem 1rem;
+    border: 1px solid white;
+    text-transform: uppercase;
+    font-size: 5px;
+    transition: 0.3s;
+    margin-right: 2rem;
+    height: 10px;
+    width: 80px;
+ }
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  left: 60px;
+  padding: 1rem rem;
+  position: relative;
+  width: 80%;
+  top: 0;
+  z-index: 10;
+}
+
+.navbar-line {
+  height: 2px; /* Grosor de la línea */
+  background-color: white; /* Color de la línea */
+  position: absolute;
+  bottom: 0; /* Posiciona la línea en la parte inferior del navbar */
+  left: -50px;
+  width: 105%; /* Asegura que cubra todo el ancho */
+  z-index: 9; /* Asegúrate de que esté debajo de otros elementos importantes */
+  margin-left: 15px;
+}
+  .hero-content h1 {
+    font-family: open sans;
+    text-align: center;
+    font-size: 20px; /* Ajusta el tamaño para que coincida con el diseño */
+    font-weight: bold;
+    margin-bottom: 0; /* Reducimos el margen entre el título y el subtítulo */
+    height: -10px;
+    margin-left: 190px;
+  }
+  
+  .hero-content p {
+    font-family: open sans;
+    text-align: center;
+    font-size: 13px; /* Ajusta el tamaño del subtítulo */
+    font-weight: 100; /* Da un estilo más ligero */
+    margin-top: 0; /* Reducimos el margen entre el subtítulo y el botón */
+    color: #EDEDED80;
+    margin-left: 190px;
+    height: -10px;
+  }
+
+  .cta-button {
+    display: flex;
+    align-items: normal;
+    padding: 0.5rem 0.5rem;
+    font-size: 5px;
+    border: 1px solid white;
+    background: transparent;
+    color: white;
+    cursor: pointer;
+    margin-left: 190px;
+    transition: 0.3s;
+  }
+
+  .hero {
+    margin-left: -400px;
+    justify-content: center;
+    flex: 1;
+    display: flex; 
+    align-items: center; 
+    text-align: left;
+    min-height: 90vh; 
+  }
+
+}
+
+@media (min-width: 481px) and (max-width: 768px){
+  .logo {
+    font-family: Karla;
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 60px;
+    letter-spacing: -0.04em;
+    margin-left: -30px;
+    text-align: left;
+    text-underline-position: from-font;
+    text-decoration-skip-ink: none;
+  
+  }
+  
+  .nav-links a {
+    padding: 10px;
+    margin-left: 10px; /* Reduce el margen izquierdo */
+    text-decoration: none;
+    color: white;
+    font-size: 12px;
+  }
+  
+  .login-button {
+    width: 150px;
+    height: 45px;
+    padding: 10px;
+    border: 1px solid white;
+    text-transform: uppercase;
+    font-size: 12px;
+    transition: 0.3s;
+    margin-right: 1rem; /* Mueve ligeramente el botón hacia la izquierda */
+  }
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  left: 60px;
+  padding: 1rem rem;
+  position: relative;
+  width: 80%;
+  top: 0;
+  z-index: 10;
+}
+
+.nav-links {
+  display: flex;
+  align-items: normal;
+  gap: 10px;
+  width: 300px;
+  margin-left: 10px; /* Reduce el margen izquierdo */
+  text-decoration: none;
+  color: white;
+  font-size: 6px;
+}
+
+.navbar-line {
+  height: 2px; /* Grosor de la línea */
+  background-color: white; /* Color de la línea */
+  position: absolute;
+  bottom: 0; /* Posiciona la línea en la parte inferior del navbar */
+  left: -50px;
+  width: 106%; /* Asegura que cubra todo el ancho */
+  z-index: 9; /* Asegúrate de que esté debajo de otros elementos importantes */
+  margin-left: 15px;
+}
+  .hero-content h1 {
+    font-family: open sans;
+    text-align: center;
+    font-size: 48px; /* Ajusta el tamaño para que coincida con el diseño */
+    font-weight: bold;
+    margin-bottom: 20px; /* Reducimos el margen entre el título y el subtítulo */
+    height: -10px;
+    margin-left: 190px;
+    line-height: 45px;
+  }
+  
+  .hero-content p {
+    font-family: open sans;
+    text-align: center;
+    font-size: 20px; /* Ajusta el tamaño del subtítulo */
+    font-weight: 100; /* Da un estilo más ligero */
+    margin-bottom: 20px; /* Reducimos el margen entre el subtítulo y el botón */
+    color: #EDEDED80;
+    margin-left: 190px;
+    height: -10px;
+  }
+
+  .cta-button {
+    display: flex;
+    align-items: normal;
+    padding: 0.5rem 0.5rem; /* Ajusta el tamaño del botón */
+    font-size: 0.7rem;
+    border: 1px solid white;
+    background: transparent;
+    color: white;
+    cursor: pointer;
+    margin-left: 280px;
+    transition: 0.3s;
+  }
+
+  .hero {
+    margin-left: -400px;
+    justify-content: center;
+    flex: 1;
+    display: flex; 
+    align-items: center; 
+    text-align: left;
+    min-height: 90vh; 
+  }
+
+}
+
+@media (min-width: 769px) and (max-width: 1024px){
+  .logo {
+    font-family: Karla;
+    font-size: 20px;
+    font-weight: 800;
+    line-height: 60px;
+    letter-spacing: -0.04em;
+    margin-left: -30px;
+    text-align: left;
+    text-underline-position: from-font;
+    text-decoration-skip-ink: none;
+  
+  }
+
+  .nav-links {
+    padding: 10px;
+    display: flex;
+    align-items: normal;
+    gap: 10px;
+    width: 300px;
+    margin-left: 10px; /* Reduce el margen izquierdo */
+    text-decoration: none;
+    color: white;
+    font-size: 10px;
+  }
+  
+  .nav-links a {
+    display: flex;
+    margin-left: 8px; /* Reduce el margen izquierdo */
+    text-decoration: none;
+    color: white;
+    font-size: 13px;
+    align-items: center;
+  }
+  
+  .login-button {
+    width:100px;
+    height: 40px;
+    padding: 0.5rem 1rem;
+    border: 1px solid white;
+    text-transform: uppercase;
+    font-size: 10px;
+    transition: 0.3s;
+    margin-right: 0rem; /* Mueve ligeramente el botón hacia la izquierda */
+  }
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  left: 60px;
+  padding: 1rem rem;
+  position: relative;
+  width: 80%;
+  top: 0;
+  z-index: 10;
+}
+
+.navbar-line {
+  height: 2px; /* Grosor de la línea */
+  background-color: white; /* Color de la línea */
+  position: absolute;
+  bottom: 0; /* Posiciona la línea en la parte inferior del navbar */
+  left: -50px;
+  width: 107%; /* Asegura que cubra todo el ancho */
+  z-index: 9; /* Asegúrate de que esté debajo de otros elementos importantes */
+  margin-left: 15px;
+}
+  .hero-content h1 {
+    font-family: open sans;
+    text-align: center;
+    font-size: 50px; /* Ajusta el tamaño para que coincida con el diseño */
+    font-weight: bold;
+    margin-bottom: 20px; /* Reducimos el margen entre el título y el subtítulo */
+    height: -10px;
+    margin-left: 190px;
+  }
+  
+  .hero-content p {
+    font-family: open sans;
+    text-align: center;
+    font-size: 30px; /* Ajusta el tamaño del subtítulo */
+    font-weight: 100; /* Da un estilo más ligero */
+    margin-top: 0; /* Reducimos el margen entre el subtítulo y el botón */
+    color: #EDEDED80;
+    margin-left: 190px;
+    height: -10px;
+  }
+
+  .cta-button {
+    display: flex;
+    align-items: normal;
+    padding: 0.5rem 0.5rem; /* Ajusta el tamaño del botón */
+    font-size: 15px;
+    border: 1px solid white;
+    background: transparent;
+    color: white;
+    cursor: pointer;
+    margin-left: 190px;
+    transition: 0.3s;
+  }
+}

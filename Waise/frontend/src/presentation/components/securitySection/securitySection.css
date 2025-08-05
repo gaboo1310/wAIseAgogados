@@ -1,0 +1,67 @@
+.security-section {
+    margin: 160px 100px;
+    color: white;
+  }
+  
+  .security-section h3 {
+    font-family: open sans;
+    font-size: 48px;
+    margin-bottom: 50px;
+    margin-left: 120px;
+  }
+
+  .security-section h4 {
+    font-family: open sans;
+    color: white;
+  }
+  
+  .security-section .aws-logo {
+    font-weight: bold;
+    color: #FFA41C; /* Color de AWS */
+  }
+  
+  .security-section .security-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-left: 120px;
+  }
+  
+  .security-section .security-items div {
+    font-family: Open Sans;
+    flex: 1 1 calc(50% - 40px);
+    font-size: 18px;
+    line-height: 1.5;
+    font-weight: 400;
+  }
+  
+  .security-section h4 {
+    font-family: open sans;
+    font-size: 32px;
+    margin-bottom: 10px;
+  }
+
+  
+  .top-left-words2 {
+    font-family: karla;
+    position:absolute;
+    top: 1150px;
+    left: 230px;
+    font-size: 25px;
+    color: white; /* Ajusta el color según sea necesario */
+    border-bottom: 2px solid white; /* Línea debajo */
+    border-right: 2px solid white; /* Línea al lado derecho */
+    padding-right: 10px; /* Espacio entre el texto y la línea derecha */
+    padding-bottom: 5px;
+  }
+  
+  
+.aws-logo {
+  display: inline-block;
+  width: 90px;
+  height: 50px;
+  margin-bottom: 5px;
+  vertical-align: middle; /* Esto lo alinea con el texto */
+}
+  
+  

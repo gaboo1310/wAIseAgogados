@@ -1,0 +1,68 @@
+/* Centra el contenido */
+.welcome-container {
+  font-family: "Poppins", sans-serif;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  text-align: center;
+  background-color: #fff;
+}
+
+/* Estilos para el título */
+.welcome-title {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #000;
+}
+
+/* Estilos para el subtítulo */
+.welcome-subtitle {
+  font-weight: 400;
+  font-size: 1rem;
+  color: #666;
+  margin-top: 10px;
+}
+
+/* Contenedor de los botones */
+.ai-options {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+/* Botones de IA */.ai-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: #ffffff;
+  border: 1px solid #ddd;
+  padding: 10px 18px;
+  border-radius: 30px;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #848484;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+  opacity: 0.8; /* Añadir opacidad */
+}
+
+/* Efecto hover */
+.ai-button:hover {
+  background: #ebebeb;
+  border-color: #ccc;
+  opacity: 1; /* Quitar opacidad */
+  transform: translateY(-1px);
+}
+
+.ai-button-focus {
+  color:white;
+  background: #198243;
+  border-color: #ccc;
+  opacity: 1;
+}
+
+
