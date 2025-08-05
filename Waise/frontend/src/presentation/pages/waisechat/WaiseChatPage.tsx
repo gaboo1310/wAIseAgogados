@@ -17,7 +17,6 @@ import UserDropdown from '../../components/userDropdown/UserDropdown';
 import { useAuth0 } from '@auth0/auth0-react';
 import { v4 as uuidv4 } from 'uuid';
 import { useSession } from '../../../hooks/useSession';
-import { useSessionPolling } from '../../../hooks/useSessionPolling';
 
 interface ClickedButtons {
   [key: string]: boolean | { [key: string]: boolean };
@@ -47,8 +46,6 @@ const WaiseChatPage = () => {
   const { getAccessTokenSilently, user } = useAuth0();
   const { createSession, validateSession, isInitializing, sessionError } = useSession();
   
-  // Start session polling
-  useSessionPolling(true, 15000); // Check session every 30 seconds
 
   const [, setInputValue] = useState<string>('');
   const [isSidebarVisible, setIsSidebarVisible] = useState<boolean>(true);
@@ -512,7 +509,7 @@ const handlePost = async (message: string, useWebSearch: boolean) => {
   useEffect(() => {
     const initializeSession = async () => {
       if (!user?.sub) {
-        navigate('/welcome');
+        navigate('/2Marval/welcome');
         return;
       }
 
@@ -525,12 +522,12 @@ const handlePost = async (message: string, useWebSearch: boolean) => {
           const sessionResult = await createSession();
           if (!sessionResult) {
             console.error('[WaiseChatPage] Failed to create session');
-            navigate('/welcome');
+            navigate('/2Marval/welcome');
           }
         }
       } catch (error) {
         console.error('[WaiseChatPage] Session initialization error:', error);
-        navigate('/welcome');
+        navigate('/2Marval/welcome');
       }
     };
 
@@ -543,7 +540,7 @@ const handlePost = async (message: string, useWebSearch: boolean) => {
   useEffect(() => {
     if (sessionError) {
       console.error('[WaiseChatPage] Session error:', sessionError);
-      navigate('/welcome');
+      navigate('/2Marval/welcome');
     }
   }, [sessionError, navigate]);
 
@@ -693,7 +690,7 @@ const handlePost = async (message: string, useWebSearch: boolean) => {
 
           <div className={`chat-sidebar ${isSidebarVisible ? '' : 'hidden'}`}>
             <div className="project-header">
-              <button className="project-button" onClick={() => navigate("/2marval/welcome")}>
+              <button className="project-button" onClick={() => navigate("/2Marval/welcome")}>
                 <h2>wAIse</h2>
               </button>
               <button onClick={toggleSidebar}>

@@ -4,6 +4,11 @@ import LoginPages from "../auth/pages/LoginPages";
 
 import WelcomePage from "../presentation/pages/welcome/WelcomePage";
 import WaiseChatPage from "../presentation/pages/waisechat/WaiseChatPage";
+import DocumentGeneratorPage from "../presentation/pages/document-generator/DocumentGeneratorPage";
+import DocumentEditorPage from "../presentation/pages/document-editor/DocumentEditorPage";
+import DocumentViewerPage from "../presentation/pages/document-viewer/DocumentViewerPage";
+import SavedDocumentsPage from "../presentation/pages/saved-documents/SavedDocumentsPage";
+import UploadDocumentsPage from "../presentation/pages/upload-documents/UploadDocumentsPage";
 
 
 
@@ -33,8 +38,28 @@ export const AppRouter = () => {
       <Route path="/2Marval/welcome" element={<WelcomePage />} />
       <Route path="/2Marval/login" element={<LoginPages />} />
       <Route 
-        path="/waisechat" 
+        path="/2Marval/waisechat" 
         element={<ProtectedRoute><WaiseChatPage /></ProtectedRoute>} 
+      />
+      <Route 
+        path="/2Marval/document-generator" 
+        element={<ProtectedRoute><DocumentGeneratorPage /></ProtectedRoute>} 
+      />
+      <Route 
+        path="/2Marval/document-editor" 
+        element={<ProtectedRoute><DocumentEditorPage /></ProtectedRoute>} 
+      />
+      <Route 
+        path="/2Marval/document-viewer" 
+        element={<ProtectedRoute><DocumentViewerPage /></ProtectedRoute>} 
+      />
+      <Route 
+        path="/2Marval/saved-documents" 
+        element={<ProtectedRoute><SavedDocumentsPage /></ProtectedRoute>} 
+      />
+      <Route 
+        path="/2Marval/upload-documents" 
+        element={<ProtectedRoute><UploadDocumentsPage /></ProtectedRoute>} 
       />
       
       <Route path="*" element={<Navigate to="/2Marval/welcome" replace />} />

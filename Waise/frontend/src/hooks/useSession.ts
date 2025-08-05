@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
 const MAX_RETRIES = 3;
-const SESSION_CHECK_INTERVAL = 15000; // 30 seconds
+const SESSION_CHECK_INTERVAL = 60000; // 60 seconds - less frequent polling
 
 // Global polling interval for the whole app
 let globalPollingInterval: NodeJS.Timeout | null = null;
@@ -40,6 +40,13 @@ export const useSession = () => {
         }
     }, []);
 
+    const stopPolling = useCallback(() => {
+        if (globalPollingInterval) {
+            clearInterval(globalPollingInterval);
+            globalPollingInterval = null;
+        }
+    }, []);
+
     const destroySession = useCallback(async () => {
         if (!user?.sub) return;
         try {
@@ -51,15 +58,15 @@ export const useSession = () => {
                     'Content-Type': 'application/json'
                 }
             });
-            clearSession();
-            await logout();
-            navigate('/welcome');
         } catch (error) {
             console.error('[useSession] Error destroying session:', error);
+        } finally {
             clearSession();
-            navigate('/welcome');
+            stopPolling();
+            await logout();
+            navigate('/2Marval/welcome');
         }
-    }, [user, clearSession, navigate, logout, getAccessTokenSilently]);
+    }, [user, clearSession, stopPolling, navigate, logout, getAccessTokenSilently]);
 
     const validateSession = useCallback(async () => {
         if (!user?.sub) return false;
@@ -171,9 +178,16 @@ export const useSession = () => {
 
         initializeSession();
 
-        // Polling: solo iniciar si no está iniciado
-        if (!globalPollingInterval) {
+        // Polling: solo iniciar si está autenticado y no está iniciado
+        if (isAuthenticated && !globalPollingInterval) {
             globalPollingInterval = setInterval(async () => {
+                if (!isAuthenticated) {
+                    if (globalPollingInterval) {
+                        clearInterval(globalPollingInterval);
+                        globalPollingInterval = null;
+                    }
+                    return;
+                }
                 const valid = await validateSession();
                 if (!valid) {
                     console.log('[useSession] Session validation failed during polling');
@@ -183,7 +197,8 @@ export const useSession = () => {
         }
 
         return () => {
-            if (globalPollingInterval) {
+            // Solo limpiar si no está autenticado
+            if (!isAuthenticated && globalPollingInterval) {
                 clearInterval(globalPollingInterval);
                 globalPollingInterval = null;
             }
@@ -200,6 +215,7 @@ export const useSession = () => {
         createSession,
         validateSession,
         destroySession,
+        stopPolling,
         isInitializing,
         sessionError,
         retryCreateSession

@@ -123,14 +123,14 @@ const WelcomePage: React.FC = () => {
   // Redireccionar automáticamente a /waisechat si el usuario ya está autenticado
   useEffect(() => {
     if (isAuthenticated && !isLoading) {
-      navigate("/2marval/waisechat");
+      navigate("/2Marval/waisechat");
     }
   }, [isAuthenticated, isLoading, navigate]);
 
   const handleAIButtonClick = (aiName: string, activeIcon: string): void => {
     localStorage.setItem("activeAI", aiName);
     localStorage.setItem("activeIcon", activeIcon);
-    navigate("/waisechat");
+    navigate("/2Marval/waisechat");
   };
 
   // Si la autenticación está cargando, mostramos un mensaje de carga

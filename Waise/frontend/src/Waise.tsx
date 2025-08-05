@@ -1,13 +1,15 @@
 
 
 
-import { RouterProvider } from "react-router-dom"
-import { router } from "./presentation/router/router"
+import { BrowserRouter } from "react-router-dom"
+import { AppRouter } from "./router/appRouter"
 
 
 export const Waise = () => {
   return (
-    <RouterProvider router={router}/>
+    <BrowserRouter>
+      <AppRouter />
+    </BrowserRouter>
   )
 }
 

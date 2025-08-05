@@ -14,12 +14,27 @@ export class SessionService {
   ) {}
 
   async createSession(userId: string) {
-    //console.log(`[SessionService] createSession called for userId: ${userId}`);
     try {
-      // Elimina todas las sesiones anteriores del usuario
+      // Verificar si ya existe una sesión válida para evitar concurrencia
+      const existingSession = await this.sessionRepository.findOne({
+        where: { userId, isValid: true },
+        order: { createdAt: 'DESC' }
+      });
+
+      if (existingSession) {
+        // Actualizar sesión existente
+        const newExpiresAt = new Date(Date.now() + this.SESSION_TTL);
+        await this.sessionRepository.update(existingSession.id, { 
+          expiresAt: newExpiresAt,
+          sessionToken: uuidv4() // Generar nuevo token
+        });
+        return { ...existingSession, expiresAt: newExpiresAt };
+      }
+
+      // Eliminar sesiones anteriores antes de crear nueva
       await this.sessionRepository.delete({ userId });
 
-      // Crea nueva sesión
+      // Crear nueva sesión
       const sessionToken = uuidv4();
       const expiresAt = new Date(Date.now() + this.SESSION_TTL);
 
@@ -30,9 +45,8 @@ export class SessionService {
         isValid: true
       });
 
-      await this.sessionRepository.save(session);
-      //console.log(`[SessionService] New session created for userId: ${userId}`);
-      return session;
+      const savedSession = await this.sessionRepository.save(session);
+      return savedSession;
     } catch (error) {
       console.error('[SessionService] Error creating session:', error);
       throw new Error('Failed to create session');
@@ -49,18 +63,23 @@ export class SessionService {
       });
 
       if (!session) {
-        console.warn(`[SessionService] No valid session found for userId: ${userId}`);
+        // Don't log warning for missing sessions - this is expected on first login
         throw new UnauthorizedException('No valid session found');
       }
 
-      // Actualiza expiración
-      session.expiresAt = new Date(Date.now() + this.SESSION_TTL);
-      await this.sessionRepository.save(session);
+      // Actualiza expiración usando update para evitar insertar duplicados
+      const newExpiresAt = new Date(Date.now() + this.SESSION_TTL);
+      await this.sessionRepository.update(session.id, { expiresAt: newExpiresAt });
+      session.expiresAt = newExpiresAt;
 
       //console.log(`[SessionService] Session validated for userId: ${userId}`);
       return session;
     } catch (error) {
-      console.error('[SessionService] Error validating session:', error);
+      // Don't log session validation errors - they're expected during normal flow
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
+      console.error('[SessionService] Unexpected error validating session:', error);
       throw new UnauthorizedException('Session validation failed');
     }
   }

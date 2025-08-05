@@ -15,7 +15,7 @@ const LoginPages = () => {
 
     
     login('gabooo');
-    navigate("/waisechat",{
+    navigate("/2Marval/waisechat",{
       replace:true
 
 

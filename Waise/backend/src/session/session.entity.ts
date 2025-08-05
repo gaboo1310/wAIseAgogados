@@ -1,6 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, Index } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, Index, Unique } from 'typeorm';
 
 @Entity()
+@Unique('unique_valid_session_per_user', ['userId', 'isValid'])
 export class Session {
   @PrimaryGeneratedColumn('uuid')
   id: string;
