@@ -65,7 +65,7 @@ const DocumentViewerPage: React.FC = () => {
       }
 
       alert('Archivo eliminado exitosamente');
-      navigate('/2Marval/upload-documents');
+      navigate('/upload-documents');
     } catch (error) {
       console.error('Error deleting file:', error);
       alert('Error eliminando el archivo');
@@ -124,7 +124,7 @@ const DocumentViewerPage: React.FC = () => {
           <p>{error || 'No se pudo cargar el archivo'}</p>
           <button 
             className="back-button"
-            onClick={() => navigate('/2Marval/upload-documents')}
+            onClick={() => navigate('/upload-documents')}
           >
             ← Volver a Documentos
           </button>
@@ -139,7 +139,7 @@ const DocumentViewerPage: React.FC = () => {
       <header className="viewer-header">
         <button 
           className="back-button"
-          onClick={() => navigate('/2Marval/upload-documents')}
+          onClick={() => navigate('/upload-documents')}
         >
           ← Volver a Documentos
         </button>

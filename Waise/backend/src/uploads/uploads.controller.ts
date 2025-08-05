@@ -32,6 +32,12 @@ export class UploadsController {
     };
   }
 
+  @Get('test-aws')
+  async testAWS() {
+    console.log('🧪 AWS test endpoint called');
+    return await this.uploadsService.testConnection();
+  }
+
   @Post('upload')
   @UseGuards(AuthGuard('jwt'))
   @UseInterceptors(FileInterceptor('file'))

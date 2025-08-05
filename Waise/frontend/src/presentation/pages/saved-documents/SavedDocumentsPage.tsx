@@ -99,7 +99,7 @@ const SavedDocumentsPage: React.FC = () => {
         // Abrir documento local
         const document = localDocuments.find(doc => doc.id === documentId);
         if (document) {
-          navigate('/2Marval/document-editor', {
+          navigate('/document-editor', {
             state: {
               document: document,
               isEditing: true
@@ -123,7 +123,7 @@ const SavedDocumentsPage: React.FC = () => {
 
         const document = await response.json();
         console.log('📄 Document loaded:', document);
-        navigate('/2Marval/document-editor', {
+        navigate('/document-editor', {
           state: {
             document: document,
             isEditing: true
@@ -195,7 +195,7 @@ const SavedDocumentsPage: React.FC = () => {
       <header className="saved-docs-header">
         <button 
           className="back-button"
-          onClick={() => navigate('/2Marval/waisechat')}
+          onClick={() => navigate('/waisechat')}
         >
           ← Volver al Chat
         </button>
@@ -242,7 +242,7 @@ const SavedDocumentsPage: React.FC = () => {
                   <p>Los documentos guardados en la nube aparecerán aquí</p>
                   <button 
                     className="create-button"
-                    onClick={() => navigate('/2Marval/document-generator')}
+                    onClick={() => navigate('/document-generator')}
                   >
                     Crear Nuevo Documento
                   </button>
@@ -291,7 +291,7 @@ const SavedDocumentsPage: React.FC = () => {
                   <p>Los documentos guardados localmente aparecerán aquí</p>
                   <button 
                     className="create-button"
-                    onClick={() => navigate('/2Marval/document-generator')}
+                    onClick={() => navigate('/document-generator')}
                   >
                     Crear Nuevo Documento
                   </button>

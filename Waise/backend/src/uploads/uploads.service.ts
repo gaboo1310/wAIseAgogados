@@ -19,12 +19,44 @@ export class UploadsService {
   constructor() {
     console.log('🔧 UploadsService Constructor');
     
+    // Validate AWS credentials
+    if (!process.env.AWS_ACCESS_KEY_ID) {
+      console.error('❌ AWS_ACCESS_KEY_ID is missing');
+    }
+    if (!process.env.AWS_SECRET_ACCESS_KEY) {
+      console.error('❌ AWS_SECRET_ACCESS_KEY is missing');
+    }
+    
+    console.log('AWS Configuration:');
+    console.log('- Access Key ID:', process.env.AWS_ACCESS_KEY_ID ? `${process.env.AWS_ACCESS_KEY_ID.substring(0, 8)}...` : 'MISSING');
+    console.log('- Secret Key:', process.env.AWS_SECRET_ACCESS_KEY ? `${process.env.AWS_SECRET_ACCESS_KEY.substring(0, 8)}... (${process.env.AWS_SECRET_ACCESS_KEY.length} chars)` : 'MISSING');
+    console.log('- Region:', process.env.AWS_REGION);
+    console.log('- Bucket:', process.env.AWS_S3_BUCKET_NAME);
+    
     this.s3 = new AWS.S3({
       accessKeyId: process.env.AWS_ACCESS_KEY_ID,
       secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
       region: process.env.AWS_REGION || 'us-east-1',
     });
     this.bucketName = process.env.AWS_S3_BUCKET_NAME || 'marval-documents';
+  }
+
+  async testConnection() {
+    try {
+      console.log('🧪 Testing AWS S3 connection...');
+      const buckets = await this.s3.listBuckets().promise();
+      console.log('✅ AWS S3 connection successful');
+      console.log('Available buckets:', buckets.Buckets.map(b => b.Name));
+      
+      const bucketExists = buckets.Buckets.some(b => b.Name === this.bucketName);
+      console.log(`Bucket "${this.bucketName}":`, bucketExists ? '✅ Exists' : '❌ Not found');
+      
+      return { success: true, buckets: buckets.Buckets.map(b => b.Name), bucketExists };
+    } catch (error) {
+      console.error('❌ AWS S3 connection failed:', error.message);
+      console.error('Error code:', error.code);
+      return { success: false, error: error.message, code: error.code };
+    }
   }
 
   async uploadFile(file: Express.Multer.File, path: string, userId: string) {

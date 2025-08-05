@@ -105,8 +105,8 @@
 
 
 
-import React, { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React from "react";
+import { Navigate } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
 import { Cards, Faqs } from "../../helpers";
 import SecuritySection from "../../components/securitySection/SecuritySection";
@@ -117,21 +117,12 @@ import "./iconos.css";
 import "./white.css";
 
 const WelcomePage: React.FC = () => {
-  const navigate = useNavigate();
-  const { loginWithRedirect, isAuthenticated, isLoading, user } = useAuth0();
+  const { loginWithRedirect, isAuthenticated, isLoading } = useAuth0();
 
-  // Redireccionar automáticamente a /waisechat si el usuario ya está autenticado
-  useEffect(() => {
-    if (isAuthenticated && !isLoading) {
-      navigate("/2Marval/waisechat");
-    }
-  }, [isAuthenticated, isLoading, navigate]);
-
-  const handleAIButtonClick = (aiName: string, activeIcon: string): void => {
-    localStorage.setItem("activeAI", aiName);
-    localStorage.setItem("activeIcon", activeIcon);
-    navigate("/2Marval/waisechat");
-  };
+  // Si está autenticado, usar Navigate directamente
+  if (isAuthenticated && !isLoading) {
+    return <Navigate to="/waisechat" replace />;
+  }
 
   // Si la autenticación está cargando, mostramos un mensaje de carga
   if (isLoading) {
@@ -215,22 +206,8 @@ const WelcomePage: React.FC = () => {
     );
   }
 
-  // Si el usuario ya está autenticado, mostramos la opción de wAIse
-  return (
-    <div style={styles.welcomeContainer}>
-      <h1 style={styles.welcomeTitle}>¡Bienvenido, {user?.name}!</h1>
-      <p style={styles.welcomeSubtitle}>Marval</p>
-      <div style={styles.aiOptions}>
-        <button
-          onClick={() => handleAIButtonClick("wAIse", "/icons/marval.png")}
-          style={styles.aiButton}
-        >
-          <img src="/icons/marval.png" alt="wAIse" style={styles.icon} />
-          wAIse
-        </button>
-      </div>
-    </div>
-  );
+  // Fallback - no debería llegar aquí
+  return <div style={styles.loading}>Cargando...</div>;
 };
 
 // 🎨 Definir los estilos en un objeto JavaScript

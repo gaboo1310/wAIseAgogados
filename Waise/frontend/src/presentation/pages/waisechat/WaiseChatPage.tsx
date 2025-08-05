@@ -509,7 +509,7 @@ const handlePost = async (message: string, useWebSearch: boolean) => {
   useEffect(() => {
     const initializeSession = async () => {
       if (!user?.sub) {
-        navigate('/2Marval/welcome');
+        navigate('/welcome');
         return;
       }
 
@@ -522,12 +522,12 @@ const handlePost = async (message: string, useWebSearch: boolean) => {
           const sessionResult = await createSession();
           if (!sessionResult) {
             console.error('[WaiseChatPage] Failed to create session');
-            navigate('/2Marval/welcome');
+            navigate('/welcome');
           }
         }
       } catch (error) {
         console.error('[WaiseChatPage] Session initialization error:', error);
-        navigate('/2Marval/welcome');
+        navigate('/welcome');
       }
     };
 
@@ -540,7 +540,7 @@ const handlePost = async (message: string, useWebSearch: boolean) => {
   useEffect(() => {
     if (sessionError) {
       console.error('[WaiseChatPage] Session error:', sessionError);
-      navigate('/2Marval/welcome');
+      navigate('/welcome');
     }
   }, [sessionError, navigate]);
 
@@ -690,7 +690,7 @@ const handlePost = async (message: string, useWebSearch: boolean) => {
 
           <div className={`chat-sidebar ${isSidebarVisible ? '' : 'hidden'}`}>
             <div className="project-header">
-              <button className="project-button" onClick={() => navigate("/2Marval/welcome")}>
+              <button className="project-button" onClick={() => navigate("/welcome")}>
                 <h2>wAIse</h2>
               </button>
               <button onClick={toggleSidebar}>
@@ -773,7 +773,7 @@ const handlePost = async (message: string, useWebSearch: boolean) => {
               <div style={{width: '20px'}}></div>
               <div style={{display: 'flex', gap: '5px'}}>
                 <button
-                  onClick={() => navigate('/2Marval/upload-documents')}
+                  onClick={() => navigate('/upload-documents')}
                   className="icon-button"
                 >
                   <div className="icon-with-text">
@@ -782,7 +782,7 @@ const handlePost = async (message: string, useWebSearch: boolean) => {
                   </div>
                 </button>
                 <button
-                  onClick={() => navigate('/2Marval/document-generator')}
+                  onClick={() => navigate('/document-generator')}
                   className="icon-button"
                 >
                   <div className="icon-with-text">
@@ -791,7 +791,7 @@ const handlePost = async (message: string, useWebSearch: boolean) => {
                   </div>
                 </button>
                 <button
-                  onClick={() => navigate('/2Marval/saved-documents')}
+                  onClick={() => navigate('/saved-documents')}
                   className="icon-button"
                 >
                   <div className="icon-with-text">

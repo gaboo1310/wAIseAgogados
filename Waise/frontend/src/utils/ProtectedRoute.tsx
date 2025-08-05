@@ -10,7 +10,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { isAuthenticated, isLoading } = useAuth0();
 
   if (isLoading) return <p>Cargando...</p>;
-  if (!isAuthenticated) return <Navigate to="/2Marval/welcome" replace />;
+  if (!isAuthenticated) return <Navigate to="/welcome" replace />;
 
   return <>{children}</>;
 };

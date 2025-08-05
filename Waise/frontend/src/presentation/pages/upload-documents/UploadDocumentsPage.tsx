@@ -200,7 +200,7 @@ const UploadDocumentsPage: React.FC = () => {
   const viewFile = (file: FileItem) => {
     console.log('👁️ Viewing file:', file.name, file);
     console.log('📍 Navigating to document viewer with state:', { file });
-    navigate('/2Marval/document-viewer', {
+    navigate('/document-viewer', {
       state: {
         file: file
       }
@@ -569,7 +569,7 @@ const UploadDocumentsPage: React.FC = () => {
       <header className="upload-header">
         <button 
           className="back-button"
-          onClick={() => navigate('/2Marval/waisechat')}
+          onClick={() => navigate('/waisechat')}
         >
           ← Volver al Chat
         </button>

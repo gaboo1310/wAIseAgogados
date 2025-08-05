@@ -72,11 +72,11 @@ const DocumentGeneratorPage: React.FC = () => {
 
   const handleTemplateSelect = (template: DocumentTemplate) => {
     setSelectedTemplate(template);
-    navigate('/2Marval/document-editor', { state: { template } });
+    navigate('/document-editor', { state: { template } });
   };
 
   const handleCreateBlankDocument = () => {
-    navigate('/2Marval/document-editor');
+    navigate('/document-editor');
   };
 
   return (
@@ -84,7 +84,7 @@ const DocumentGeneratorPage: React.FC = () => {
       <header className="page-header">
         <button 
           className="back-button"
-          onClick={() => navigate('/2Marval/waisechat')}
+          onClick={() => navigate('/waisechat')}
         >
           ← Volver al Chat
         </button>

@@ -19,13 +19,15 @@ import ProtectedRoute from "../utils/ProtectedRoute";
 import { useAuth0 } from '@auth0/auth0-react';
 
 const HomeRedirect = () => {
-  const { isAuthenticated, isLoading } = useAuth0();
+  const { isAuthenticated, isLoading, user } = useAuth0();
 
   if (isLoading) return <div>Cargando...</div>;
   
-  return isAuthenticated 
-    ? <Navigate to="/2Marval/waisechat" replace /> 
-    : <Navigate to="/2Marval/welcome" replace />;
+  if (isAuthenticated && user) {
+    return <Navigate to="/waisechat" replace />;
+  }
+  
+  return <Navigate to="/welcome" replace />;
 };
 
 export const AppRouter = () => {
@@ -35,34 +37,34 @@ export const AppRouter = () => {
       <Route path="/" element={<HomeRedirect />} />
       
       {/* Resto de tus rutas */}
-      <Route path="/2Marval/welcome" element={<WelcomePage />} />
-      <Route path="/2Marval/login" element={<LoginPages />} />
+      <Route path="/welcome" element={<WelcomePage />} />
+      <Route path="/login" element={<LoginPages />} />
       <Route 
-        path="/2Marval/waisechat" 
+        path="/waisechat" 
         element={<ProtectedRoute><WaiseChatPage /></ProtectedRoute>} 
       />
       <Route 
-        path="/2Marval/document-generator" 
+        path="/document-generator" 
         element={<ProtectedRoute><DocumentGeneratorPage /></ProtectedRoute>} 
       />
       <Route 
-        path="/2Marval/document-editor" 
+        path="/document-editor" 
         element={<ProtectedRoute><DocumentEditorPage /></ProtectedRoute>} 
       />
       <Route 
-        path="/2Marval/document-viewer" 
+        path="/document-viewer" 
         element={<ProtectedRoute><DocumentViewerPage /></ProtectedRoute>} 
       />
       <Route 
-        path="/2Marval/saved-documents" 
+        path="/saved-documents" 
         element={<ProtectedRoute><SavedDocumentsPage /></ProtectedRoute>} 
       />
       <Route 
-        path="/2Marval/upload-documents" 
+        path="/upload-documents" 
         element={<ProtectedRoute><UploadDocumentsPage /></ProtectedRoute>} 
       />
       
-      <Route path="*" element={<Navigate to="/2Marval/welcome" replace />} />
+      <Route path="*" element={<Navigate to="/welcome" replace />} />
     </Routes>
   );
 };

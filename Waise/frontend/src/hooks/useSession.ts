@@ -64,7 +64,7 @@ export const useSession = () => {
             clearSession();
             stopPolling();
             await logout();
-            navigate('/2Marval/welcome');
+            navigate('/welcome');
         }
     }, [user, clearSession, stopPolling, navigate, logout, getAccessTokenSilently]);
 

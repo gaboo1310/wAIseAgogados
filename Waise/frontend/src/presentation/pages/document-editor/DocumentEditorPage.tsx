@@ -707,7 +707,7 @@ const DocumentEditorPage: React.FC = () => {
       {/* Botón flotante para volver */}
       <button 
         className="floating-back-button"
-        onClick={() => navigate('/2Marval/document-generator')}
+        onClick={() => navigate('/document-generator')}
       >
         ← Volver a Plantillas
       </button>
