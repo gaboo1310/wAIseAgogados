@@ -15,7 +15,7 @@ interface FileItem {
 
 const DocumentViewerPage: React.FC = () => {
   const navigate = useNavigate();
-  const { getAccessTokenSilently } = useAuth0();
+  const { getAccessTokenSilently, isAuthenticated } = useAuth0();
   const location = useLocation();
   const [file, setFile] = useState<FileItem | null>(null);
   const [loading, setLoading] = useState(true);
@@ -23,6 +23,13 @@ const DocumentViewerPage: React.FC = () => {
 
   useEffect(() => {
     console.log('📁 DocumentViewer: Loading file from state...', location.state);
+    console.log('📁 DocumentViewer: isAuthenticated:', isAuthenticated);
+    
+    // Only proceed if user is authenticated
+    if (!isAuthenticated) {
+      console.log('📁 DocumentViewer: User not authenticated, waiting...');
+      return;
+    }
     
     // Get file info from navigation state
     if (location.state?.file) {
@@ -34,8 +41,13 @@ const DocumentViewerPage: React.FC = () => {
       console.error('❌ No file data in location state');
       setError('No se encontró información del archivo');
       setLoading(false);
+      
+      // Redirect back to upload documents after a short delay
+      setTimeout(() => {
+        navigate('/upload-documents', { replace: true });
+      }, 2000);
     }
-  }, [location.state]);
+  }, [location.state, navigate, isAuthenticated]);
 
   const getFileExtension = (fileName: string): string => {
     return fileName.split('.').pop()?.toLowerCase() || '';
@@ -65,7 +77,7 @@ const DocumentViewerPage: React.FC = () => {
       }
 
       alert('Archivo eliminado exitosamente');
-      navigate('/upload-documents');
+      navigate('/upload-documents', { replace: true });
     } catch (error) {
       console.error('Error deleting file:', error);
       alert('Error eliminando el archivo');
@@ -107,10 +119,16 @@ const DocumentViewerPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="document-viewer-page">
+      <div className="document-viewer-page" style={{ 
+        minHeight: '100vh', 
+        backgroundColor: '#fff',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
         <div className="loading-container">
           <div className="loading-spinner"></div>
-          <p>Cargando...</p>
+          <p>Cargando documento...</p>
         </div>
       </div>
     );
@@ -118,13 +136,38 @@ const DocumentViewerPage: React.FC = () => {
 
   if (error || !file) {
     return (
-      <div className="document-viewer-page">
-        <div className="error-container">
-          <h2>Error</h2>
-          <p>{error || 'No se pudo cargar el archivo'}</p>
+      <div className="document-viewer-page" style={{ 
+        minHeight: '100vh', 
+        backgroundColor: '#fff',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <div className="error-container" style={{
+          textAlign: 'center',
+          padding: '40px',
+          maxWidth: '500px'
+        }}>
+          <h2 style={{ color: '#ef4444', marginBottom: '16px' }}>Error</h2>
+          <p style={{ color: '#6b7280', marginBottom: '24px' }}>
+            {error || 'No se pudo cargar el archivo'}
+          </p>
+          <p style={{ color: '#9ca3af', fontSize: '14px', marginBottom: '24px' }}>
+            Redirigiendo automáticamente...
+          </p>
           <button 
             className="back-button"
-            onClick={() => navigate('/upload-documents')}
+            onClick={() => navigate('/upload-documents', { replace: true })}
+            style={{
+              backgroundColor: '#16a34a',
+              color: 'white',
+              border: 'none',
+              padding: '12px 24px',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: '500'
+            }}
           >
             ← Volver a Documentos
           </button>
@@ -139,7 +182,7 @@ const DocumentViewerPage: React.FC = () => {
       <header className="viewer-header">
         <button 
           className="back-button"
-          onClick={() => navigate('/upload-documents')}
+          onClick={() => navigate('/upload-documents', { replace: true })}
         >
           ← Volver a Documentos
         </button>

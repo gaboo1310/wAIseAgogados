@@ -2,8 +2,8 @@ import { useAuth0 } from "@auth0/auth0-react";
 import { useCallback, useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
-const MAX_RETRIES = 3;
-const SESSION_CHECK_INTERVAL = 60000; // 60 seconds - less frequent polling
+const MAX_RETRIES = 5;
+const SESSION_CHECK_INTERVAL = 300000; // 5 minutes - much less aggressive polling
 
 // Global polling interval for the whole app
 let globalPollingInterval: NodeJS.Timeout | null = null;
@@ -148,10 +148,20 @@ export const useSession = () => {
     useEffect(() => {
         if (isLoading) return;
 
+        let isCurrentEffectActive = true; // Prevent stale closure issues
+
         const initializeSession = async () => {
             if (!isAuthenticated || !user?.sub) {
-                setIsInitializing(false);
-                clearSession();
+                if (isCurrentEffectActive) {
+                    setIsInitializing(false);
+                    clearSession();
+                }
+                return;
+            }
+
+            // Prevent multiple concurrent initializations
+            if (isCreatingSession.current) {
+                console.log('[useSession] Session initialization already in progress, skipping');
                 return;
             }
 
@@ -159,9 +169,13 @@ export const useSession = () => {
                 console.log('[useSession] Initializing session for user:', user.sub);
                 const valid = await validateSession();
                 
+                if (!isCurrentEffectActive) return; // Effect cleanup happened
+                
                 if (!valid) {
                     console.log('[useSession] No valid session found, creating new session');
                     const sessionResult = await createSession();
+                    if (!isCurrentEffectActive) return; // Effect cleanup happened
+                    
                     if (!sessionResult) {
                         throw new Error('Failed to create session');
                     }
@@ -169,10 +183,14 @@ export const useSession = () => {
                     console.log('[useSession] Valid session found');
                 }
             } catch (error) {
-                console.error('[useSession] Session initialization error:', error);
-                setSessionError('Failed to initialize session');
+                if (isCurrentEffectActive) {
+                    console.error('[useSession] Session initialization error:', error);
+                    setSessionError('Failed to initialize session');
+                }
             } finally {
-                setIsInitializing(false);
+                if (isCurrentEffectActive) {
+                    setIsInitializing(false);
+                }
             }
         };
 
@@ -188,22 +206,36 @@ export const useSession = () => {
                     }
                     return;
                 }
-                const valid = await validateSession();
-                if (!valid) {
-                    console.log('[useSession] Session validation failed during polling');
-                    await destroySession();
+                
+                try {
+                    const valid = await validateSession();
+                    if (!valid) {
+                        console.warn('[useSession] Session validation failed during polling - will retry next cycle');
+                        // Solo deslogueamos después de múltiples fallos consecutivos
+                        if (retryCount.current >= MAX_RETRIES) {
+                            console.error('[useSession] Maximum validation failures reached, logging out');
+                            await destroySession();
+                        }
+                    } else {
+                        // Reset retry count on successful validation
+                        retryCount.current = 0;
+                    }
+                } catch (error) {
+                    console.error('[useSession] Polling validation error:', error);
+                    // No auto-logout on network errors, just log
                 }
             }, SESSION_CHECK_INTERVAL);
         }
 
         return () => {
+            isCurrentEffectActive = false; // Mark effect as inactive
             // Solo limpiar si no está autenticado
             if (!isAuthenticated && globalPollingInterval) {
                 clearInterval(globalPollingInterval);
                 globalPollingInterval = null;
             }
         };
-    }, [isLoading, isAuthenticated, user, createSession, validateSession, clearSession, destroySession]);
+    }, [isLoading, isAuthenticated, user?.sub]); // Simplified dependencies
 
     const retryCreateSession = useCallback(() => {
         setSessionError(null);

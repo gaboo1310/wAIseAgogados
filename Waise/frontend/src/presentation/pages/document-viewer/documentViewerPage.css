@@ -3,7 +3,24 @@
   display: flex;
   flex-direction: column;
   height: 100vh;
+  min-height: 100vh;
+  background: #f8f9fa !important;
+  transition: opacity 0.2s ease-in-out;
+  opacity: 1;
+  position: relative;
+  z-index: 1;
+}
+
+/* Ensure body background is overridden when this page is active */
+.document-viewer-page::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
   background: #f8f9fa;
+  z-index: -1;
 }
 
 /* Header */

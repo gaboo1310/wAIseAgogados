@@ -8,7 +8,11 @@ import { AuthModule } from './auth/auth.module';
 import { SessionModule } from './session/session.module';
 import { DocumentsModule } from './documents/documents.module';
 import { UploadsModule } from './uploads/uploads.module';
+import { OcrModule } from './ocr/ocr.module';
+import { DocumentMetadataModule } from './document-metadata/document-metadata.module';
+import { VectorModule } from './vector/vector.module';
 import { Session } from './session/session.entity';
+import { DocumentMetadata } from './document-metadata/document-metadata.entity';
 
 @Module({
   imports: [
@@ -20,7 +24,7 @@ import { Session } from './session/session.entity';
       username: 'user',
       password: 'password',
       database: 'chat_db',
-      entities: [Message, Session],
+      entities: [Message, Session, DocumentMetadata],
       synchronize: true, // Solo en desarrollo, NO en producción
     }),
     MessagesModule,
@@ -28,7 +32,10 @@ import { Session } from './session/session.entity';
     AuthModule,
     SessionModule,
     DocumentsModule,
-    UploadsModule
+    UploadsModule,
+    OcrModule,
+    DocumentMetadataModule,
+    VectorModule
   ],
 })
 export class AppModule {}

@@ -36,6 +36,8 @@ createRoot(document.getElementById('root')!).render(
         scope: "openid profile email",
       }}
       cacheLocation='localstorage'
+      useRefreshTokens={true}
+      useRefreshTokensFallback={true}
     >
       <Waise></Waise>
     </Auth0Provider>

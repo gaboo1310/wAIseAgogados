@@ -1,3 +1,5 @@
+const fetch = require('node-fetch');
+
 export const generateInternetContext = async (prompt: string): Promise<string> => {
   console.log(`[🌐 BusquedaWeb] Generando contexto para prompt: "${prompt}"`);
   

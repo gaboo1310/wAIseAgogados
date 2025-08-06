@@ -149,11 +149,38 @@ const SavedDocumentsPage: React.FC = () => {
         // Eliminar documento de la nube
         console.log('🗑️ Deleting cloud document:', documentId);
         
-        // Por ahora, simular eliminación exitosa
-        // TODO: Implementar endpoint de eliminación simple
-        console.log('Document deletion simulated (not implemented yet)');
+        try {
+          const token = await getAccessTokenSilently();
+          const deleteUrl = `${import.meta.env.VITE_API_URL}/documents/${documentId}`;
+          console.log('🔗 Delete document URL:', deleteUrl);
+          
+          const response = await fetch(deleteUrl, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+
+          console.log('📡 Delete response status:', response.status);
+          console.log('📡 Delete response ok:', response.ok);
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error('❌ Delete document error:', response.status, errorText);
+            throw new Error(`Error eliminando documento: ${response.status}`);
+          }
+
+          const result = await response.json();
+          console.log('✅ Document deleted successfully:', result);
+          
+        } catch (error) {
+          console.error('❌ Error deleting cloud document:', error);
+          setError('Error eliminando el documento de la nube');
+          return; // Don't reload if deletion failed
+        }
         
-        // Recargar documentos
+        // Recargar documentos solo si la eliminación fue exitosa
         await loadCloudDocuments();
       }
       

@@ -57,3 +57,11 @@ pids
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+
+Waise/backend/nul
+Waise/backend/CON
+Waise/backend/PRN
+Waise/backend/AUX
+Waise/backend/COM1
+Waise/backend/LPT1

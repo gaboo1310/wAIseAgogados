@@ -7,12 +7,41 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const { isAuthenticated, isLoading } = useAuth0();
+  const { isAuthenticated, isLoading, user } = useAuth0();
 
-  if (isLoading) return <p>Cargando...</p>;
-  if (!isAuthenticated) return <Navigate to="/welcome" replace />;
+  // Show loading while Auth0 is still loading
+  if (isLoading) {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh',
+        fontSize: '16px',
+        color: '#6b7280',
+        backgroundColor: '#fff',
+        transition: 'opacity 0.2s ease-in-out'
+      }}>
+        Cargando...
+      </div>
+    );
+  }
 
-  return <>{children}</>;
+  // Only redirect if definitely not authenticated
+  if (!isAuthenticated || !user) {
+    console.log('[ProtectedRoute] Redirecting to welcome - isAuthenticated:', isAuthenticated, 'user:', !!user);
+    return <Navigate to="/welcome" replace />;
+  }
+
+  // Render children with smooth transition
+  return (
+    <div style={{
+      transition: 'opacity 0.2s ease-in-out',
+      opacity: 1
+    }}>
+      {children}
+    </div>
+  );
 };
 
 export default ProtectedRoute;

@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { toZonedTime, format } from 'date-fns-tz';
 import "./waisechat.css";
 import "./waisechat2.css";
-import "./chat.css";
 import TextBox from "../../components/textMessagesBox/TextBox";
 import GptMessages from "../../components/chat-bubles/GptMessages";
 import MyMessages from "../../components/chat-bubles/MyMessages";
@@ -44,7 +43,7 @@ interface Chat {
 const WaiseChatPage = () => {
   const navigate = useNavigate();
   const { getAccessTokenSilently, user } = useAuth0();
-  const { createSession, validateSession, isInitializing, sessionError } = useSession();
+  const { isInitializing, sessionError } = useSession();
   
 
   const [, setInputValue] = useState<string>('');
@@ -506,43 +505,21 @@ const handlePost = async (message: string, useWebSearch: boolean) => {
     }
   }, []);
 
+  // Handle authentication redirect - let useSession handle session management
   useEffect(() => {
-    const initializeSession = async () => {
-      if (!user?.sub) {
-        navigate('/welcome');
-        return;
-      }
-
-      try {
-        console.log('[WaiseChatPage] Initializing session for user:', user.sub);
-        const valid = await validateSession();
-        
-        if (!valid) {
-          console.log('[WaiseChatPage] Creating new session');
-          const sessionResult = await createSession();
-          if (!sessionResult) {
-            console.error('[WaiseChatPage] Failed to create session');
-            navigate('/welcome');
-          }
-        }
-      } catch (error) {
-        console.error('[WaiseChatPage] Session initialization error:', error);
-        navigate('/welcome');
-      }
-    };
-
-    if (user?.sub) {
-      initializeSession();
+    if (!user?.sub && !isInitializing) {
+      console.log('[WaiseChatPage] User not authenticated, redirecting to welcome');
+      navigate('/welcome');
     }
-  }, [user, createSession, validateSession, navigate]);
+  }, [user, isInitializing, navigate]);
 
   // Handle session errors
   useEffect(() => {
-    if (sessionError) {
+    if (sessionError && !isInitializing) {
       console.error('[WaiseChatPage] Session error:', sessionError);
       navigate('/welcome');
     }
-  }, [sessionError, navigate]);
+  }, [sessionError, isInitializing, navigate]);
 
   return (
     <div className="waise-chat-container">
@@ -797,6 +774,15 @@ const handlePost = async (message: string, useWebSearch: boolean) => {
                   <div className="icon-with-text">
                     <div className="circle-icon" style={{display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px'}}>📁</div>
                     <span className="icon-text">Archivos<br /> guardados</span>
+                  </div>
+                </button>
+                <button
+                  onClick={() => navigate('/ocr-documents')}
+                  className="icon-button"
+                >
+                  <div className="icon-with-text">
+                    <div className="circle-icon" style={{display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px'}}>🔍</div>
+                    <span className="icon-text">Procesar<br /> OCR</span>
                   </div>
                 </button>
               </div>

@@ -345,7 +345,7 @@ const GptMessages = ({ text, iconSrc, isLastMessage }: Props) => {
       <div className="flex items-center justify-center h-12 w-12 min-h-12 min-w-12 rounded-full border border-gray-600">
           <img src={iconSrc} alt="AI Icon" className="h-10 w-10" />
         </div>
-        <div className="relative ml-3 text-xs text-black pt-3 pb-2 px-4 text-justify leading-relaxed break-words overflow-wrap">
+        <div className="relative ml-3 text-base text-black pt-3 pb-2 px-4 leading-relaxed break-words overflow-wrap">
           {blocks.map((block, index) => {
             if (block.type === 'table') {
               return <MarkdownTableRenderer key={index} markdown={block.content} />;

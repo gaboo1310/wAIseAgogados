@@ -1,13 +1,14 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { ProsConsDiscusserDto } from './dtos/prosConsDiscusser.Dto';
-import { prosConsDicusserStreamUseCase } from './use-cases/prosConsDicusserStreamUseCase';
+import { ProsConsDiscusserDto, ChatRequestDto } from './dtos/chatRequest.dto';
+import { chatStreamUseCase } from './use-cases/chatStream.use-case';
 import OpenAI from 'openai';
-import { deepseekstreamStreamUseCase } from './use-cases/deepseekstreamUseCase';
+import { aiChatStreamUseCase } from './use-cases/aiChat.use-case';
 import * as path from 'path';
 import * as fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Message } from '../messages/message.entity';
+import { VectorService } from '../vector/vector.service';
 
 import { Repository } from 'typeorm';
 
@@ -31,6 +32,7 @@ export class GptService {
   constructor(
     @InjectRepository(Message)
     private readonly messageRepository: Repository<Message>,
+    private readonly vectorService: VectorService,
   ) {}
 
 
@@ -53,7 +55,7 @@ export class GptService {
   //   }
   // }
 
-  async prosConsDicusserStream({ prompt, conversationId, useWebSearch, selectedLibraries, focus }: ProsConsDiscusserDto) {
+  async prosConsDicusserStream({ prompt, conversationId, useWebSearch, selectedLibraries, focus }: ProsConsDiscusserDto, userId: string) {
     try {
       console.log(`\n\n===========================================================`);
       console.log(`PROCESANDO CONSULTA PARA CONVERSACIÓN ACTUAL`);
@@ -122,16 +124,44 @@ export class GptService {
         }
       ];
       
-      console.log("[BACKEND] useWebSearch recibido:", useWebSearch); 
+      console.log("[BACKEND] useWebSearch recibido:", useWebSearch);
+      console.log("[BACKEND] userId para RAG:", userId);
+      console.log("[BACKEND] Tipo de userId:", typeof userId);
+      console.log("[BACKEND] Usuario autenticado correctamente:", !!userId);
       
-      // Usando prosConsDicusserStreamUseCase como solicitas, pero pasando el historial
-      const stream = await prosConsDicusserStreamUseCase(this.openai, {
+      // Búsqueda RAG en documentos legales
+      let ragContext = '';
+      try {
+        console.log('[BACKEND] Realizando búsqueda RAG en documentos...');
+        const ragResults = await this.vectorService.searchSimilarDocuments(
+          prompt,
+          userId,
+          5, // Top 5 resultados más relevantes
+          {} // Sin filtros específicos por ahora
+        );
+        
+        if (ragResults && ragResults.length > 0) {
+          console.log(`[BACKEND] Encontrados ${ragResults.length} documentos relevantes`);
+          ragContext = ragResults
+            .map(result => `Documento: ${result.metadata?.filename || 'Sin nombre'}\nContenido: ${result.text}\nRelevancia: ${result.score?.toFixed(3) || 'N/A'}`)
+            .join('\n\n---\n\n');
+        } else {
+          console.log('[BACKEND] No se encontraron documentos relevantes');
+        }
+      } catch (error) {
+        console.error('[BACKEND] Error en búsqueda RAG:', error);
+        ragContext = '';
+      }
+      
+      // Using chatStreamUseCase for clean chat streaming
+      const stream = await chatStreamUseCase(this.openai, {
         prompt: prompt.substring(0, 4096),
         useWebSearch: !!useWebSearch,
         messageHistory: messages,
         conversationId,
         selectedLibraries,
-        focus
+        focus,
+        ragContext
       });
       
       // Devolvemos el stream directamente
@@ -150,7 +180,7 @@ export class GptService {
     
   //------------------------------------------------------
   async deepseekstreamStream({ prompt }: ProsConsDiscusserDto) {
-    return await deepseekstreamStreamUseCase(this.DEEPSEEKER, {
+    return await aiChatStreamUseCase(this.DEEPSEEKER, {
       prompt,
     });
   }

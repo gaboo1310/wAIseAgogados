@@ -200,10 +200,13 @@ const UploadDocumentsPage: React.FC = () => {
   const viewFile = (file: FileItem) => {
     console.log('👁️ Viewing file:', file.name, file);
     console.log('📍 Navigating to document viewer with state:', { file });
+    
+    // Ensure clean navigation by using replace
     navigate('/document-viewer', {
       state: {
         file: file
-      }
+      },
+      replace: false // Keep history for back navigation
     });
   };
 
@@ -237,6 +240,8 @@ const UploadDocumentsPage: React.FC = () => {
   };
 
   const deleteFile = async () => {
+    console.log('🖱️ DELETE BUTTON CLICKED'); // Debug log to confirm click is registered
+    
     if (!fileToDelete) {
       console.error('❌ No file to delete');
       return;
@@ -255,6 +260,8 @@ const UploadDocumentsPage: React.FC = () => {
       
       const deleteUrl = `${import.meta.env.VITE_API_URL}/uploads/delete/${encodeURIComponent(fileToDelete.path)}`;
       console.log('🔗 Delete URL:', deleteUrl);
+      console.log('🔗 Original file path:', fileToDelete.path);
+      console.log('🔗 Encoded file path:', encodeURIComponent(fileToDelete.path));
       
       const response = await fetch(deleteUrl, {
         method: 'DELETE',
@@ -265,10 +272,12 @@ const UploadDocumentsPage: React.FC = () => {
 
       console.log('📡 Response status:', response.status);
       console.log('📡 Response ok:', response.ok);
+      console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
 
       if (!response.ok) {
         const errorText = await response.text();
         console.error('❌ Delete response error:', response.status, errorText);
+        console.error('❌ Full response object:', response);
         throw new Error(`Error eliminando el archivo: ${response.status} ${errorText}`);
       }
 

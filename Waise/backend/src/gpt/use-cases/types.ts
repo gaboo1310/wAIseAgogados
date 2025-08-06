@@ -8,6 +8,16 @@ export interface Options {
   selectedLibraries?: string[];
   focus?: string;
 }
+
+export interface ChatStreamOptions {
+  prompt: string;
+  messageHistory?: Array<{ role: string, content: string }>;
+  conversationId?: string;
+  useWebSearch?: boolean;
+  selectedLibraries?: string[];
+  focus?: string;
+  ragContext?: string;
+}
   
 export interface ProjectInfo {
   id: string;

@@ -1,1 +1,1 @@
-export * from './prosConsDiscusser.Dto'
+export * from './chatRequest.dto'

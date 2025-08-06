@@ -9,6 +9,7 @@ import DocumentEditorPage from "../presentation/pages/document-editor/DocumentEd
 import DocumentViewerPage from "../presentation/pages/document-viewer/DocumentViewerPage";
 import SavedDocumentsPage from "../presentation/pages/saved-documents/SavedDocumentsPage";
 import UploadDocumentsPage from "../presentation/pages/upload-documents/UploadDocumentsPage";
+import OCRDocumentsPage from "../presentation/pages/ocr-documents/OCRDocumentsPage";
 
 
 
@@ -62,6 +63,10 @@ export const AppRouter = () => {
       <Route 
         path="/upload-documents" 
         element={<ProtectedRoute><UploadDocumentsPage /></ProtectedRoute>} 
+      />
+      <Route 
+        path="/ocr-documents" 
+        element={<ProtectedRoute><OCRDocumentsPage /></ProtectedRoute>} 
       />
       
       <Route path="*" element={<Navigate to="/welcome" replace />} />
