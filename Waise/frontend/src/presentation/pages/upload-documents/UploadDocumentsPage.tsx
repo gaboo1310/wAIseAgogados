@@ -715,8 +715,8 @@ const UploadDocumentsPage: React.FC = () => {
       return;
     }
 
-    if (confirmationText.toLowerCase() !== 'confirmar') {
-      setError('Debes escribir "confirmar" para eliminar la carpeta');
+    if (confirmationText.toLowerCase() !== 'eliminar') {
+      setError('Debes escribir "eliminar" para eliminar la carpeta');
       return;
     }
 
@@ -1159,12 +1159,12 @@ const UploadDocumentsPage: React.FC = () => {
               </div>
 
               <div className="confirmation-input-section">
-                <p><strong>Para confirmar, escribe exactamente "confirmar" en el campo de abajo:</strong></p>
+                <p><strong>Para confirmar, escribe exactamente "eliminar" en el campo de abajo:</strong></p>
                 <input
                   type="text"
                   value={confirmationText}
                   onChange={(e) => setConfirmationText(e.target.value)}
-                  placeholder="Escribe 'confirmar' para continuar"
+                  placeholder="Escribe 'eliminar' para continuar"
                   className="confirmation-input"
                   disabled={deletingFolder}
                   autoFocus
@@ -1185,7 +1185,7 @@ const UploadDocumentsPage: React.FC = () => {
                 <button 
                   className="confirm-delete-folder-button"
                   onClick={deleteFolder}
-                  disabled={deletingFolder || confirmationText.toLowerCase() !== 'confirmar'}
+                  disabled={deletingFolder || confirmationText.toLowerCase() !== 'eliminar'}
                 >
                   {deletingFolder ? 'Eliminando...' : 'Eliminar Carpeta'}
                 </button>

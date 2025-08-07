@@ -152,13 +152,24 @@ export class VectorService {
         await index.deleteMany(chunkIds);
         console.log(`[VectorService] Deleted ${chunkIds.length} chunks`);
       } else {
-        // Eliminar todos los chunks del documento
-        await index.deleteMany({
+        // Primero buscar todos los IDs del documento
+        const queryResult = await index.query({
+          vector: new Array(1024).fill(0), // Vector dummy con dimensión correcta
+          topK: 1000,
+          includeMetadata: true,
           filter: {
             documentId: { $eq: documentId }
           }
         });
-        console.log(`[VectorService] Deleted all chunks for document ${documentId}`);
+        
+        const idsToDelete = (queryResult.matches || []).map(match => match.id);
+        
+        if (idsToDelete.length > 0) {
+          await index.deleteMany(idsToDelete);
+          console.log(`[VectorService] Deleted ${idsToDelete.length} chunks for document ${documentId}`);
+        } else {
+          console.log(`[VectorService] No chunks found for document ${documentId}`);
+        }
       }
 
       return true;
@@ -175,7 +186,7 @@ export class VectorService {
       
       // Buscar todos los chunks del documento
       const searchResult = await index.query({
-        vector: new Array(1536).fill(0), // Vector dummy
+        vector: new Array(1024).fill(0), // Vector dummy con dimensión correcta
         topK: 1000, // Máximo chunks por documento
         includeMetadata: true,
         filter: {

@@ -11,6 +11,7 @@ import { UploadsModule } from './uploads/uploads.module';
 import { OcrModule } from './ocr/ocr.module';
 import { DocumentMetadataModule } from './document-metadata/document-metadata.module';
 import { VectorModule } from './vector/vector.module';
+import { AiModule } from './ai/ai.module';
 import { Session } from './session/session.entity';
 import { DocumentMetadata } from './document-metadata/document-metadata.entity';
 
@@ -35,7 +36,8 @@ import { DocumentMetadata } from './document-metadata/document-metadata.entity';
     UploadsModule,
     OcrModule,
     DocumentMetadataModule,
-    VectorModule
+    VectorModule,
+    AiModule
   ],
 })
 export class AppModule {}

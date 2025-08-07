@@ -17,10 +17,16 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from '@nestjs/passport';
 import { Response } from 'express';
 import { UploadsService, FileItem } from './uploads.service';
+import { OcrService } from '../ocr/ocr.service';
+import { VectorService } from '../vector/vector.service';
 
 @Controller('uploads')
 export class UploadsController {
-  constructor(private readonly uploadsService: UploadsService) {}
+  constructor(
+    private readonly uploadsService: UploadsService,
+    private readonly ocrService: OcrService,
+    private readonly vectorService: VectorService
+  ) {}
 
   @Get('test')
   testUploads() {
@@ -63,7 +69,72 @@ export class UploadsController {
 
     console.log('Upload userId:', userId);
     
-    return await this.uploadsService.uploadFile(file, path, userId);
+    try {
+      // 1. Upload the file first
+      const uploadResult = await this.uploadsService.uploadFile(file, path, userId);
+      
+      // 2. Process PDF files with OCR and vectorization
+      if (file.mimetype === 'application/pdf') {
+        console.log('🤖 Starting OCR and vectorization for PDF file');
+        
+        // Create temporary file for OCR processing
+        const tempFilePath = await this.uploadsService.createTempFileForOCR(file);
+        
+        try {
+          // Extract text with OCR
+          const ocrResult = await this.ocrService.extractTextFromPdf(tempFilePath);
+          
+          if (ocrResult.success && ocrResult.extractedText.trim().length > 0) {
+            console.log('✅ OCR successful, starting vectorization');
+            
+            // Vectorize the extracted text
+            const vectorData = {
+              id: `${userId}_${file.originalname}_${Date.now()}`,
+              text: ocrResult.extractedText,
+              metadata: {
+                documentId: uploadResult.id || `doc_${Date.now()}`,
+                userId: userId,
+                filename: file.originalname,
+                documentType: 'pdf',
+                chunkIndex: 0,
+                totalChunks: 1,
+                uploadedAt: new Date().toISOString(),
+                filePath: uploadResult.path || '',
+                fileSize: file.size
+              }
+            };
+            
+            const vectorIds = await this.vectorService.addDocumentToVector(vectorData);
+            console.log('✅ Vectorization successful:', vectorIds.length, 'chunks created');
+            
+            // Add vectorization info to upload result
+            uploadResult.message += ' - Documento procesado y vectorizado para búsqueda RAG';
+            (uploadResult as any).vectorized = true;
+            (uploadResult as any).vectorChunks = vectorIds.length;
+            
+          } else {
+            console.log('⚠️ OCR failed or no text extracted, file uploaded without vectorization');
+            uploadResult.message += ' - Archivo subido sin procesamiento OCR';
+          }
+          
+        } catch (ocrError) {
+          console.error('❌ OCR/Vectorization error:', ocrError);
+          uploadResult.message += ' - Archivo subido, pero falló el procesamiento OCR';
+        } finally {
+          // Clean up temporary file
+          await this.uploadsService.cleanupTempFile(tempFilePath);
+        }
+        
+      } else {
+        console.log('ℹ️ Non-PDF file, skipping OCR processing');
+      }
+      
+      return uploadResult;
+      
+    } catch (error) {
+      console.error('❌ Upload error:', error);
+      throw new BadRequestException(`Upload failed: ${error.message}`);
+    }
   }
 
   @Post('create-folder')

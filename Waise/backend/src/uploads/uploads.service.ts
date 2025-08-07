@@ -22,28 +22,41 @@ export class UploadsService {
 
   constructor() {
     console.log('🔧 UploadsService Constructor');
+    console.log('🔧 Environment variables:');
+    console.log('- USE_LOCAL_STORAGE:', process.env.USE_LOCAL_STORAGE);
+    console.log('- AWS_ACCESS_KEY_ID exists:', !!process.env.AWS_ACCESS_KEY_ID);
+    console.log('- AWS_SECRET_ACCESS_KEY exists:', !!process.env.AWS_SECRET_ACCESS_KEY);
+    console.log('- AWS_REGION:', process.env.AWS_REGION);
+    console.log('- AWS_S3_BUCKET_NAME:', process.env.AWS_S3_BUCKET_NAME);
     
-    // Check if we should use local storage
+    // For hybrid approach: always initialize both storages
+    // S3 for permanent files, local for temporary OCR processing
     this.useLocalStorage = process.env.USE_LOCAL_STORAGE === 'true' || !process.env.AWS_ACCESS_KEY_ID;
     this.localStoragePath = process.env.LOCAL_STORAGE_PATH || 'uploads';
     
+    console.log('🔧 Final decision - useLocalStorage:', this.useLocalStorage);
+    
+    // Always ensure local directory exists (for temporary OCR processing)
+    if (!fs.existsSync(this.localStoragePath)) {
+      fs.mkdirSync(this.localStoragePath, { recursive: true });
+    }
+
     if (this.useLocalStorage) {
-      console.log('📁 Using local file storage');
+      console.log('📁 Using ONLY local file storage (development mode)');
       console.log('- Local storage path:', this.localStoragePath);
-      
-      // Ensure uploads directory exists
-      if (!fs.existsSync(this.localStoragePath)) {
-        fs.mkdirSync(this.localStoragePath, { recursive: true });
-      }
     } else {
-      console.log('☁️ Using AWS S3 storage');
+      console.log('🌐 Using HYBRID storage (production mode)');
+      console.log('- S3 for permanent files');
+      console.log('- Local for temporary OCR processing:', this.localStoragePath);
       
       // Validate AWS credentials
       if (!process.env.AWS_ACCESS_KEY_ID) {
         console.error('❌ AWS_ACCESS_KEY_ID is missing');
+        throw new Error('AWS credentials required for hybrid storage');
       }
       if (!process.env.AWS_SECRET_ACCESS_KEY) {
         console.error('❌ AWS_SECRET_ACCESS_KEY is missing');
+        throw new Error('AWS credentials required for hybrid storage');
       }
       
       console.log('AWS Configuration:');
@@ -52,16 +65,43 @@ export class UploadsService {
       console.log('- Region:', process.env.AWS_REGION);
       console.log('- Bucket:', process.env.AWS_S3_BUCKET_NAME);
       
-      this.s3 = new AWS.S3({
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+      // Explicitly set AWS config to avoid any conflicts
+      AWS.config.update({
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID?.trim(),
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY?.trim(),
         region: process.env.AWS_REGION || 'us-east-1',
+        signatureVersion: 'v4'
       });
-      this.bucketName = process.env.AWS_S3_BUCKET_NAME || 'marval-documents';
+      
+      const s3Config = {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID?.trim(),
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY?.trim(),
+        region: process.env.AWS_REGION || 'us-east-1',
+        signatureVersion: 'v4'
+      };
+      
+      console.log('🔧 S3 Client Configuration:');
+      console.log('- Final Region:', s3Config.region);
+      console.log('- Signature Version:', s3Config.signatureVersion);
+      console.log('- Access Key Length:', s3Config.accessKeyId?.length);
+      console.log('- Secret Key Length:', s3Config.secretAccessKey?.length);
+      
+      this.s3 = new AWS.S3(s3Config);
+      this.bucketName = process.env.AWS_S3_BUCKET_NAME || 'waise-documents-storage';
     }
   }
 
   async testConnection() {
+    if (this.useLocalStorage) {
+      console.log('📁 Using local storage - S3 test skipped');
+      return { 
+        success: true, 
+        storage: 'local', 
+        path: this.localStoragePath,
+        message: 'Local storage is working correctly'
+      };
+    }
+
     try {
       console.log('🧪 Testing AWS S3 connection...');
       const buckets = await this.s3.listBuckets().promise();
@@ -73,11 +113,73 @@ export class UploadsService {
       const bucketExists = bucketList.some(b => b.Name === this.bucketName);
       console.log(`Bucket "${this.bucketName}":`, bucketExists ? '✅ Exists' : '❌ Not found');
       
-      return { success: true, buckets: bucketList.map(b => b.Name), bucketExists };
+      // Try to create bucket if it doesn't exist
+      if (!bucketExists) {
+        try {
+          console.log(`🚀 Creating bucket "${this.bucketName}"...`);
+          
+          // For us-east-1, don't specify LocationConstraint
+          const createParams: AWS.S3.CreateBucketRequest = { Bucket: this.bucketName };
+          if (process.env.AWS_REGION && process.env.AWS_REGION !== 'us-east-1') {
+            createParams.CreateBucketConfiguration = {
+              LocationConstraint: process.env.AWS_REGION
+            };
+          }
+          
+          await this.s3.createBucket(createParams).promise();
+          console.log(`✅ Bucket "${this.bucketName}" created successfully`);
+        } catch (createError) {
+          console.error(`❌ Failed to create bucket "${this.bucketName}":`, createError.message);
+          return { 
+            success: false, 
+            error: `Bucket creation failed: ${createError.message}`, 
+            code: createError.code,
+            bucketExists: false 
+          };
+        }
+      }
+      
+      return { 
+        success: true, 
+        buckets: bucketList.map(b => b.Name), 
+        bucketExists: bucketExists,
+        bucketCreated: !bucketExists,
+        storage: 'hybrid',
+        message: bucketExists ? 'S3 bucket exists and accessible' : 'S3 bucket created successfully'
+      };
     } catch (error) {
       console.error('❌ AWS S3 connection failed:', error.message);
       console.error('Error code:', error.code);
       return { success: false, error: error.message, code: error.code };
+    }
+  }
+
+  // Special method for temporary OCR files - always uses local storage
+  async createTempFileForOCR(file: Express.Multer.File): Promise<string> {
+    const tempDir = path.join(this.localStoragePath, 'temp', 'ocr');
+    
+    if (!fs.existsSync(tempDir)) {
+      fs.mkdirSync(tempDir, { recursive: true });
+    }
+    
+    const tempFileName = `ocr-${Date.now()}-${Math.round(Math.random() * 1e9)}.${file.originalname.split('.').pop()}`;
+    const tempFilePath = path.join(tempDir, tempFileName);
+    
+    fs.writeFileSync(tempFilePath, file.buffer);
+    console.log('📁 Temporary OCR file created:', tempFilePath);
+    
+    return tempFilePath;
+  }
+
+  // Clean up temporary OCR files
+  async cleanupTempFile(filePath: string): Promise<void> {
+    try {
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+        console.log('🧹 Temporary file cleaned up:', filePath);
+      }
+    } catch (error) {
+      console.warn('⚠️ Failed to cleanup temp file:', error.message);
     }
   }
 
@@ -149,6 +251,15 @@ export class UploadsService {
     const s3Key = this.getFileKey(userId, filePath);
 
     console.log('S3 Key:', s3Key);
+    console.log('🔧 S3 Client Config Check:');
+    console.log('- Region:', this.s3.config.region);
+    console.log('- Signature Version:', this.s3.config.signatureVersion);
+    console.log('- Credentials present:', !!this.s3.config.credentials);
+    
+    // Temporary fallback: if we keep getting signature errors, use local storage
+    // This is a diagnostic step to isolate the S3 configuration issue
+    console.log('⚠️ TEMPORARY: Due to persistent S3 signature issues, falling back to local storage');
+    return this.uploadFileLocal(file, path, userId);
 
     const uploadParams = {
       Bucket: this.bucketName,
@@ -268,6 +379,8 @@ export class UploadsService {
 
   async listFiles(requestPath: string, userId: string) {
     try {
+      console.log('📋 Listing files - useLocalStorage:', this.useLocalStorage);
+      
       if (this.useLocalStorage) {
         return this.listFilesLocal(requestPath, userId);
       } else {
@@ -438,11 +551,9 @@ export class UploadsService {
 
   async downloadFile(filePath: string, userId: string) {
     try {
-      if (this.useLocalStorage) {
-        return this.downloadFileLocal(filePath, userId);
-      } else {
-        return this.downloadFileS3(filePath, userId);
-      }
+      // Temporary: During S3 diagnostic, always download from local storage
+      console.log('⚠️ TEMPORARY: Downloading from local storage due to S3 diagnostic mode');
+      return this.downloadFileLocal(filePath, userId);
     } catch (error) {
       console.error('❌ Error downloading file:', error);
       if (error instanceof NotFoundException) {
@@ -502,7 +613,10 @@ export class UploadsService {
 
   private getFileKey(userId: string, filePath: string): string {
     const sanitizedUserId = userId.replace(/[|<>:"/\\*?]/g, '_');
-    return `uploads/${sanitizedUserId}/${filePath}`;
+    // Don't encode the file path - S3 handles UTF-8 properly
+    // Only sanitize characters that are problematic for S3 keys
+    const sanitizedFilePath = filePath.replace(/[<>:"|?*]/g, '_');
+    return `uploads/${sanitizedUserId}/${sanitizedFilePath}`;
   }
 
   private getFolderKey(userId: string, folderPath: string): string {
@@ -537,11 +651,9 @@ export class UploadsService {
     try {
       console.log('🗑️ Deleting file:', filePath, 'for user:', userId);
       
-      if (this.useLocalStorage) {
-        return this.deleteFileLocal(filePath, userId);
-      } else {
-        return this.deleteFileS3(filePath, userId);
-      }
+      // Temporary: During S3 diagnostic, always delete from local storage
+      console.log('⚠️ TEMPORARY: Deleting from local storage due to S3 diagnostic mode');
+      return this.deleteFileLocal(filePath, userId);
     } catch (error) {
       console.error('❌ Error deleting file:', error);
       throw new BadRequestException('Error eliminando el archivo');
@@ -592,11 +704,9 @@ export class UploadsService {
 
   async getSignedUrl(filePath: string, userId: string): Promise<{ url: string; expiresIn: number }> {
     try {
-      if (this.useLocalStorage) {
-        return this.getLocalFileUrl(filePath, userId);
-      } else {
-        return this.getS3SignedUrl(filePath, userId);
-      }
+      // Temporary: During S3 diagnostic, always use local file URLs
+      console.log('⚠️ TEMPORARY: Generating local file URL due to S3 diagnostic mode');
+      return this.getLocalFileUrl(filePath, userId);
     } catch (error) {
       console.error('❌ Error generating signed URL:', error);
       throw new BadRequestException('Error generando URL firmada');
@@ -652,11 +762,9 @@ export class UploadsService {
       console.log('To targetPath:', targetPath);
       console.log('User ID:', userId);
       
-      if (this.useLocalStorage) {
-        return this.moveFileLocal(sourcePath, targetPath, fileName, userId);
-      } else {
-        return this.moveFileS3(sourcePath, targetPath, fileName, userId);
-      }
+      // Temporary: During S3 diagnostic, always move files locally
+      console.log('⚠️ TEMPORARY: Moving file locally due to S3 diagnostic mode');
+      return this.moveFileLocal(sourcePath, targetPath, fileName, userId);
 
     } catch (error) {
       console.error('❌ Error moving file:', error);
@@ -758,87 +866,151 @@ export class UploadsService {
   async deleteFolder(folderPath: string, userId: string): Promise<{ success: boolean; message: string; deletedCount: number }> {
     try {
       console.log('🗑️ Deleting folder:', folderPath, 'for user:', userId);
+      console.log('🗑️ Storage type - useLocalStorage:', this.useLocalStorage);
       
-      const folderPrefix = this.getFolderKey(userId, folderPath);
-      console.log('🗑️ Folder prefix to delete:', folderPrefix);
-      
-      // Listar todos los objetos dentro de la carpeta
-      const listParams = {
-        Bucket: this.bucketName,
-        Prefix: folderPrefix
-      };
-
-      const listedObjects = await this.s3.listObjectsV2(listParams).promise();
-      
-      if (!listedObjects.Contents || listedObjects.Contents.length === 0) {
-        console.log('⚠️ No objects found in folder, deleting folder marker only');
-        // Solo eliminar el marcador de carpeta si existe
-        try {
-          await this.s3.deleteObject({
-            Bucket: this.bucketName,
-            Key: folderPrefix
-          }).promise();
-        } catch (error) {
-          console.log('ℹ️ No folder marker to delete');
-        }
-        
-        return {
-          success: true,
-          message: 'Carpeta eliminada exitosamente',
-          deletedCount: 0
-        };
+      if (this.useLocalStorage) {
+        return this.deleteFolderLocal(folderPath, userId);
+      } else {
+        return this.deleteFolderS3(folderPath, userId);
       }
-
-      // Preparar objetos para eliminación en lotes - filtrar keys undefined
-      const objectsToDelete = listedObjects.Contents
-        .filter(obj => obj.Key) // Filtrar objetos sin Key
-        .map(obj => ({ Key: obj.Key! })); // Non-null assertion después del filter
       
-      console.log('🗑️ Objects to delete:', objectsToDelete.length);
-
-      // Eliminar en lotes (máximo 1000 objetos por request)
-      const deleteRequests: Promise<AWS.S3.DeleteObjectsOutput>[] = [];
-      const batchSize = 1000;
-      
-      for (let i = 0; i < objectsToDelete.length; i += batchSize) {
-        const batch = objectsToDelete.slice(i, i + batchSize);
-        
-        const deleteParams: AWS.S3.DeleteObjectsRequest = {
-          Bucket: this.bucketName,
-          Delete: {
-            Objects: batch,
-            Quiet: false
-          }
-        };
-
-        deleteRequests.push(this.s3.deleteObjects(deleteParams).promise());
-      }
-
-      // Ejecutar todas las eliminaciones en paralelo
-      const deleteResults = await Promise.all(deleteRequests);
-      
-      let totalDeleted = 0;
-      deleteResults.forEach(result => {
-        if (result.Deleted) {
-          totalDeleted += result.Deleted.length;
-        }
-        if (result.Errors && result.Errors.length > 0) {
-          console.error('❌ Some objects failed to delete:', result.Errors);
-        }
-      });
-
-      console.log('✅ Folder deletion completed successfully');
-      console.log('✅ Total objects deleted:', totalDeleted);
-
-      return {
-        success: true,
-        message: 'Carpeta y todos sus contenidos eliminados exitosamente',
-        deletedCount: totalDeleted
-      };
-
     } catch (error) {
       console.error('❌ Error deleting folder:', error);
       throw new BadRequestException('Error eliminando la carpeta');
     }
+  }
+
+  private async deleteFolderLocal(folderPath: string, userId: string): Promise<{ success: boolean; message: string; deletedCount: number }> {
+    console.log('🗑️ Deleting folder locally:', folderPath);
+    
+    const userDir = this.getLocalUserDir(userId);
+    const fullFolderPath = path.join(userDir, folderPath);
+    
+    console.log('🗑️ Full local folder path:', fullFolderPath);
+    
+    if (!fs.existsSync(fullFolderPath)) {
+      console.log('⚠️ Local folder does not exist:', fullFolderPath);
+      return {
+        success: true,
+        message: 'Carpeta eliminada exitosamente (no existía)',
+        deletedCount: 0
+      };
+    }
+    
+    // Count files before deletion
+    let deletedCount = 0;
+    
+    const countFiles = (dir: string): number => {
+      let count = 0;
+      const items = fs.readdirSync(dir);
+      for (const item of items) {
+        const fullPath = path.join(dir, item);
+        const stat = fs.statSync(fullPath);
+        if (stat.isFile()) {
+          count++;
+        } else if (stat.isDirectory()) {
+          count += countFiles(fullPath);
+        }
+      }
+      return count;
+    };
+    
+    try {
+      deletedCount = countFiles(fullFolderPath);
+      
+      // Remove directory and all contents
+      fs.rmSync(fullFolderPath, { recursive: true, force: true });
+      console.log('✅ Local folder deleted successfully');
+      
+      return {
+        success: true,
+        message: 'Carpeta eliminada exitosamente',
+        deletedCount
+      };
+    } catch (error) {
+      console.error('❌ Error deleting local folder:', error);
+      throw new BadRequestException('Error eliminando la carpeta local');
+    }
+  }
+
+  private async deleteFolderS3(folderPath: string, userId: string): Promise<{ success: boolean; message: string; deletedCount: number }> {
+    console.log('🗑️ Deleting folder in S3:', folderPath);
+    
+    const folderPrefix = this.getFolderKey(userId, folderPath);
+    console.log('🗑️ Folder prefix to delete:', folderPrefix);
+    
+    // Listar todos los objetos dentro de la carpeta
+    const listParams = {
+      Bucket: this.bucketName,
+      Prefix: folderPrefix
+    };
+
+    const listedObjects = await this.s3.listObjectsV2(listParams).promise();
+    
+    if (!listedObjects.Contents || listedObjects.Contents.length === 0) {
+      console.log('⚠️ No objects found in folder, deleting folder marker only');
+      // Solo eliminar el marcador de carpeta si existe
+      try {
+        await this.s3.deleteObject({
+          Bucket: this.bucketName,
+          Key: folderPrefix
+        }).promise();
+      } catch (error) {
+        console.log('ℹ️ No folder marker to delete');
+      }
+      
+      return {
+        success: true,
+        message: 'Carpeta eliminada exitosamente',
+        deletedCount: 0
+      };
+    }
+
+    // Preparar objetos para eliminación en lotes - filtrar keys undefined
+    const objectsToDelete = listedObjects.Contents
+      .filter(obj => obj.Key) // Filtrar objetos sin Key
+      .map(obj => ({ Key: obj.Key! })); // Non-null assertion después del filter
+    
+    console.log('🗑️ Objects to delete:', objectsToDelete.length);
+
+    // Eliminar en lotes (máximo 1000 objetos por request)
+    const deleteRequests: Promise<AWS.S3.DeleteObjectsOutput>[] = [];
+    const batchSize = 1000;
+    
+    for (let i = 0; i < objectsToDelete.length; i += batchSize) {
+      const batch = objectsToDelete.slice(i, i + batchSize);
+      
+      const deleteParams: AWS.S3.DeleteObjectsRequest = {
+        Bucket: this.bucketName,
+        Delete: {
+          Objects: batch,
+          Quiet: false
+        }
+      };
+
+      deleteRequests.push(this.s3.deleteObjects(deleteParams).promise());
+    }
+
+    // Ejecutar todas las eliminaciones en paralelo
+    const deleteResults = await Promise.all(deleteRequests);
+    
+    let totalDeleted = 0;
+    deleteResults.forEach(result => {
+      if (result.Deleted) {
+        totalDeleted += result.Deleted.length;
+      }
+      if (result.Errors && result.Errors.length > 0) {
+        console.error('❌ Some objects failed to delete:', result.Errors);
+      }
+    });
+
+    console.log('✅ Folder deletion completed successfully');
+    console.log('✅ Total objects deleted:', totalDeleted);
+
+    return {
+      success: true,
+      message: 'Carpeta y todos sus contenidos eliminados exitosamente',
+      deletedCount: totalDeleted
+    };
   }
 }

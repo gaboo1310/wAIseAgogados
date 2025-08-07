@@ -5,7 +5,9 @@ import {
   UseInterceptors, 
   BadRequestException,
   Get,
-  UseGuards 
+  UseGuards,
+  Param,
+  Req 
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -148,6 +150,47 @@ export class OcrController {
         totalVectors: 0,
         storageUsed: '0 MB'
       };
+    }
+  }
+
+  @Get('get-text/*path')
+  async getTextFromFile(
+    @Param('path') filePath: string,
+    @Req() req: any
+  ) {
+    console.log('📄 Get OCR text from file:', filePath);
+    
+    let userId = req.user?.userId || req.user?.sub || req.user?.id;
+    if (!userId && req.user) {
+      const userKeys = Object.keys(req.user);
+      userId = req.user[userKeys[0]] || 'auth0-user-default';
+    }
+
+    try {
+      // Por ahora, simulamos que tenemos texto OCR guardado
+      // En el futuro, esto debería buscar en una base de datos o cache
+      const mockText = `Texto extraído del archivo ${filePath}. 
+      
+      Este es contenido simulado para demostrar la funcionalidad.
+      En una implementación real, este texto vendría de:
+      1. Una base de datos donde se almacena el OCR de cada archivo
+      2. Un cache en memoria 
+      3. Reprocesamiento del archivo si es necesario
+      
+      Información del archivo:
+      - Ruta: ${filePath}
+      - Usuario: ${userId}
+      - Fecha de consulta: ${new Date().toISOString()}`;
+
+      return {
+        success: true,
+        text: mockText,
+        filePath: filePath,
+        extractedAt: new Date().toISOString()
+      };
+    } catch (error) {
+      console.error('❌ Error getting OCR text:', error);
+      throw new BadRequestException('Error obteniendo el texto del archivo');
     }
   }
 }
