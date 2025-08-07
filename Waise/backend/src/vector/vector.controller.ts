@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Delete,
   Body,
   Query,
   UseGuards,
@@ -25,6 +26,12 @@ interface SearchQuery {
   topK?: number;
   documentType?: string;
   documentIds?: string[];
+}
+
+interface DeleteDocumentRequest {
+  documentId: string;
+  filePath?: string;
+  chunkIds?: string[];
 }
 
 @Controller('vector')
@@ -89,6 +96,43 @@ export class VectorController {
       query,
       results,
       totalFound: results.length,
+    };
+  }
+
+  @Delete('delete-document')
+  async deleteDocument(
+    @Body() deleteRequest: DeleteDocumentRequest,
+    @Req() req: RequestWithUser,
+  ) {
+    const { documentId, filePath, chunkIds } = deleteRequest;
+    
+    if (!documentId) {
+      throw new BadRequestException('DocumentId is required');
+    }
+
+    const userId = extractUserId(req.user);
+    
+    console.log('🗑️ Vector Controller: Deleting document vectors:', {
+      documentId,
+      filePath,
+      userId,
+      chunkIds: chunkIds?.length || 0,
+    });
+
+    const success = await this.vectorService.deleteDocumentFromVector(
+      documentId,
+      chunkIds
+    );
+
+    if (!success) {
+      throw new BadRequestException('Failed to delete document vectors');
+    }
+
+    return {
+      success: true,
+      message: 'Document vectors deleted successfully',
+      documentId,
+      deletedChunks: chunkIds?.length || 'all',
     };
   }
 }

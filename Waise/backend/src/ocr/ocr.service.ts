@@ -188,6 +188,10 @@ export class OcrService {
       const cleanText = cleaningResult.cleanText;
       
       console.log(`[OCR] ✨ Session ${sessionId}: Texto limpiado: ${rawText.length} → ${cleanText.length} caracteres`);
+      
+      // MOSTRAR TEXTO COMPLETO en logs
+      console.log(`[OCR] 📄 Session ${sessionId}: Mostrando texto completo extraído`);
+      this.textCleaner.logFullText(rawText, cleanText, `SESSION ${sessionId}`);
 
       // Loggear resultado final
       this.logFinalResult(sessionId, { ...bestResult, text: cleanText }, processingMetrics, extractionAttempts);

@@ -1,0 +1,150 @@
+/* ===== DASHBOARD NAVIGATION STYLES ===== */
+
+.dashboard-navigation {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-bottom: none;
+  padding: 1rem 0;
+  position: relative;
+  z-index: 10;
+  box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+}
+
+.nav-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.back-to-dashboard-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  color: white;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.back-to-dashboard-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  background: linear-gradient(135deg, #5a6fd8 0%, #6b4190 100%);
+}
+
+.back-to-dashboard-btn:active {
+  transform: translateY(0);
+}
+
+.back-icon {
+  font-size: 1.1rem;
+}
+
+.back-text {
+  font-weight: 600;
+}
+
+.current-module {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.module-indicator {
+  font-size: 1rem;
+}
+
+.module-name {
+  color: white;
+  font-weight: 600;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+
+@media (max-width: 768px) {
+  .nav-content {
+    padding: 0 0.75rem;
+  }
+
+  .back-to-dashboard-btn {
+    padding: 0.5rem 0.8rem;
+    font-size: 0.85rem;
+  }
+
+  .back-text {
+    display: none;
+  }
+
+  .back-icon {
+    font-size: 1.2rem;
+  }
+
+  .current-module {
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-navigation {
+    padding: 0.5rem 0;
+  }
+
+  .nav-content {
+    padding: 0 0.5rem;
+  }
+
+  .current-module {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.25rem;
+  }
+
+  .module-name {
+    font-size: 0.8rem;
+  }
+}
+
+/* ===== ANIMATIONS ===== */
+
+@keyframes slideInFromTop {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dashboard-navigation {
+  animation: slideInFromTop 0.4s ease-out;
+}
+
+/* ===== DARK MODE SUPPORT ===== */
+
+@media (prefers-color-scheme: dark) {
+  .dashboard-navigation {
+    background: rgba(26, 32, 44, 0.95);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .current-module {
+    color: #a0aec0;
+  }
+
+  .module-name {
+    color: #e2e8f0;
+  }
+}

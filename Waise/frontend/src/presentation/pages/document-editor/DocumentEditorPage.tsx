@@ -707,9 +707,9 @@ const DocumentEditorPage: React.FC = () => {
       {/* Botón flotante para volver */}
       <button 
         className="floating-back-button"
-        onClick={() => navigate('/document-generator')}
+        onClick={() => navigate('/dashboard')}
       >
-        ← Volver a Plantillas
+        ← Volver al Dashboard
       </button>
 
       {/* Modal de Guardado */}

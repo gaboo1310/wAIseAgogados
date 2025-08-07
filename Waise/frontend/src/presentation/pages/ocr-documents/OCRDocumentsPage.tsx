@@ -235,8 +235,8 @@ const OCRDocumentsPage: React.FC = () => {
     <div className="ocr-documents-page">
       <div className="page-header">
         <div className="header-top">
-          <button className="back-button" onClick={() => navigate('/waisechat')}>
-            ← Volver al Chat
+          <button className="back-button" onClick={() => navigate('/dashboard')}>
+            ← Dashboard
           </button>
           <h1>📄 Procesamiento de Documentos OCR</h1>
         </div>

@@ -17,7 +17,12 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "test:all": "npm run build && node dist/tests/run-all-tests.js",
+    "test:ocr": "npm run build && node dist/tests/run-ocr-tests.js",
+    "test:handwriting": "npm run build && node dist/tests/run-handwriting-tests.js",
+    "test:pipeline": "npm run build && node -e \"require('./dist/tests/test-runner.js').TestRunner.runPipelineTests().then(() => process.exit(0)).catch(e => { console.error(e); process.exit(1); })\"",
+    "test:quick": "npm run build && node -e \"require('./dist/tests/test-runner.js').TestRunner.runQuickTest().then(() => process.exit(0)).catch(e => { console.error(e); process.exit(1); })\""
   },
   "dependencies": {
     "@mistralai/mistralai": "^1.7.5",

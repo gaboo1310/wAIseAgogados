@@ -10,6 +10,33 @@ interface FileItem {
   size?: number;
   uploadedAt?: string;
   path: string;
+  // OCR/RAG related fields
+  isProcessed?: boolean;
+  ocrConfidence?: number;
+  hasVectors?: boolean;
+  processingStatus?: 'pending' | 'processing' | 'completed' | 'failed';
+}
+
+interface OCRStats {
+  totalDocuments: number;
+  processedDocuments: number;
+  pendingDocuments: number;
+  averageConfidence: number;
+  totalVectors: number;
+  storageUsed: string;
+}
+
+interface OCRResult {
+  success: boolean;
+  extractedText: string;
+  confidence: number;
+  filename: string;
+  fileSize: number;
+  metadata?: {
+    pageCount: number;
+    processingTime: number;
+  };
+  error?: string;
 }
 
 
@@ -28,6 +55,11 @@ const UploadDocumentsPage: React.FC = () => {
   const [fileToDelete, setFileToDelete] = useState<FileItem | null>(null);
   const [deleting, setDeleting] = useState<boolean>(false);
   const [draggedFile, setDraggedFile] = useState<FileItem | null>(null);
+  
+  // OCR/RAG related states
+  const [ocrStats, setOcrStats] = useState<OCRStats | null>(null);
+  const [processingFiles, setProcessingFiles] = useState<Set<string>>(new Set());
+  const [showOCROptions, setShowOCROptions] = useState<boolean>(false);
   const [dragOverFolder, setDragOverFolder] = useState<string | null>(null);
   const [dragOverParent, setDragOverParent] = useState<boolean>(false);
   const [showDeleteFolderModal, setShowDeleteFolderModal] = useState<boolean>(false);
@@ -37,6 +69,7 @@ const UploadDocumentsPage: React.FC = () => {
 
   useEffect(() => {
     loadFiles();
+    loadOCRStats();
   }, [currentPath]);
 
   const loadFiles = async (forcePath?: string) => {
@@ -77,6 +110,131 @@ const UploadDocumentsPage: React.FC = () => {
     }
   };
 
+  const loadOCRStats = async () => {
+    try {
+      const token = await getAccessTokenSilently();
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/ocr/stats`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const stats = await response.json();
+        setOcrStats(stats);
+        console.log('📊 OCR Stats loaded:', stats);
+      } else {
+        console.log('📊 OCR Stats not available or endpoint not implemented');
+        // Set default stats if endpoint doesn't exist
+        setOcrStats({
+          totalDocuments: files.length,
+          processedDocuments: 0,
+          pendingDocuments: 0,
+          averageConfidence: 0,
+          totalVectors: 0,
+          storageUsed: '0 MB'
+        });
+      }
+    } catch (error) {
+      console.error('Error loading OCR stats:', error);
+      // Set default stats on error
+      setOcrStats({
+        totalDocuments: files.length,
+        processedDocuments: 0,
+        pendingDocuments: 0,
+        averageConfidence: 0,
+        totalVectors: 0,
+        storageUsed: '0 MB'
+      });
+    }
+  };
+
+  const processFileWithOCR = async (file: File, path: string) => {
+    const fileName = file.name;
+    const processingId = `${path}/${fileName}`;
+    
+    try {
+      const token = await getAccessTokenSilently();
+      setProcessingFiles(prev => new Set(prev).add(processingId));
+
+      // First upload the file normally
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('path', path);
+
+      console.log('📤 Uploading file with OCR processing:', fileName);
+
+      const uploadResponse = await fetch(`${import.meta.env.VITE_API_URL}/uploads/upload`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error('Error uploading file');
+      }
+
+      const uploadResult = await uploadResponse.json();
+      console.log('✅ File uploaded:', uploadResult);
+
+      // Then process with OCR if it's a supported file type
+      const supportedTypes = ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'webp'];
+      const fileExtension = fileName.split('.').pop()?.toLowerCase();
+      
+      if (fileExtension && supportedTypes.includes(fileExtension)) {
+        // Process OCR
+        const ocrFormData = new FormData();
+        ocrFormData.append('file', file);
+
+        const ocrResponse = await fetch(`${import.meta.env.VITE_API_URL}/ocr/extract`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+          body: ocrFormData,
+        });
+
+        if (ocrResponse.ok) {
+          const ocrResult = await ocrResponse.json();
+          console.log('✅ OCR completed:', ocrResult);
+          
+          // Store OCR result with document (this would need a backend endpoint)
+          try {
+            await fetch(`${import.meta.env.VITE_API_URL}/document-metadata/store-ocr`, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                filePath: uploadResult.path,
+                ocrResult: ocrResult,
+              }),
+            });
+          } catch (error) {
+            console.log('OCR result storage not available, continuing...');
+          }
+        }
+      }
+
+      // Reload files and stats
+      await loadFiles();
+      await loadOCRStats();
+      
+    } catch (error) {
+      console.error('❌ Error processing file with OCR:', error);
+      throw error;
+    } finally {
+      setProcessingFiles(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(processingId);
+        return newSet;
+      });
+    }
+  };
+
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = event.target.files;
     if (!selectedFiles || selectedFiles.length === 0) return;
@@ -86,30 +244,13 @@ const UploadDocumentsPage: React.FC = () => {
 
     try {
       for (const file of Array.from(selectedFiles)) {
-        console.log('📤 Uploading file:', file.name);
+        console.log('📤 Processing file with OCR:', file.name);
         
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('path', currentPath);
-
-        const token = await getAccessTokenSilently();
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/uploads/upload`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-          body: formData,
-        });
-
-        if (!response.ok) {
-          throw new Error(`Error subiendo ${file.name}`);
-        }
-
-        console.log('✅ File uploaded:', file.name);
+        // Use the new OCR processing function
+        await processFileWithOCR(file, currentPath);
       }
 
-      // Recargar archivos después de subir
-      await loadFiles();
+      console.log('✅ All files processed successfully');
       
     } catch (error) {
       console.error('Error uploading files:', error);
@@ -122,36 +263,82 @@ const UploadDocumentsPage: React.FC = () => {
   };
 
   const createFolder = async () => {
-    if (!newFolderName.trim()) return;
+    if (!newFolderName.trim()) {
+      setError('El nombre de la carpeta no puede estar vacío');
+      return;
+    }
+
+    // Validar caracteres no permitidos
+    const invalidChars = /[<>:"/\\|?*]/;
+    if (invalidChars.test(newFolderName)) {
+      setError('El nombre de la carpeta contiene caracteres no válidos');
+      return;
+    }
+
+    setError(''); // Limpiar errores previos
 
     try {
       console.log('📁 Creating folder:', newFolderName);
+      console.log('📁 Current path:', currentPath);
       
       const token = await getAccessTokenSilently();
+      console.log('🔑 Token obtained:', token ? 'YES' : 'NO');
+      
+      const requestData = {
+        folderName: newFolderName.trim(),
+        path: currentPath || ''
+      };
+      
+      console.log('📤 Request data:', requestData);
+      
       const response = await fetch(`${import.meta.env.VITE_API_URL}/uploads/create-folder`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          folderName: newFolderName,
-          path: currentPath
-        }),
+        body: JSON.stringify(requestData),
       });
 
+      console.log('📡 Response status:', response.status);
+      console.log('📡 Response ok:', response.ok);
+
       if (!response.ok) {
-        throw new Error('Error creando carpeta');
+        const errorText = await response.text();
+        console.error('❌ Create folder error:', response.status, errorText);
+        
+        let errorMessage = 'Error creando la carpeta';
+        if (response.status === 409) {
+          errorMessage = 'Ya existe una carpeta con ese nombre';
+        } else if (response.status === 400) {
+          errorMessage = 'Nombre de carpeta no válido';
+        } else if (response.status === 401) {
+          errorMessage = 'No autorizado. Por favor, inicia sesión nuevamente';
+        }
+        
+        throw new Error(`${errorMessage} (${response.status})`);
       }
 
-      console.log('✅ Folder created');
+      let result;
+      try {
+        result = await response.json();
+        console.log('✅ Folder created successfully:', result);
+      } catch (parseError) {
+        console.log('✅ Folder created successfully (no JSON response)');
+        result = { success: true, message: 'Carpeta creada' };
+      }
+
+      console.log('✅ Folder created successfully');
       setNewFolderName('');
       setShowCreateFolder(false);
+      
+      // Recargar archivos
       await loadFiles();
       
     } catch (error) {
-      console.error('Error creating folder:', error);
-      setError('Error creando la carpeta');
+      console.error('❌ Error creating folder:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido creando la carpeta';
+      setError(errorMessage);
     }
   };
 
@@ -288,6 +475,32 @@ const UploadDocumentsPage: React.FC = () => {
       } catch (parseError) {
         console.log('✅ File deleted successfully (no JSON response)');
         result = { success: true, message: 'Archivo eliminado' };
+      }
+
+      // Also delete vectors from Pinecone if the file was processed
+      try {
+        console.log('🗑️ Attempting to delete vectors from Pinecone for:', fileToDelete.path);
+        const vectorDeleteResponse = await fetch(`${import.meta.env.VITE_API_URL}/vector/delete-document`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            documentId: fileToDelete.path, // Using file path as document ID
+            filePath: fileToDelete.path,
+          }),
+        });
+
+        if (vectorDeleteResponse.ok) {
+          const vectorResult = await vectorDeleteResponse.json();
+          console.log('✅ Vectors deleted from Pinecone:', vectorResult);
+        } else {
+          console.log('⚠️ Vector deletion not available or failed, continuing...');
+        }
+      } catch (vectorError) {
+        console.log('⚠️ Vector deletion error (non-critical):', vectorError);
+        // Don't throw error - vector deletion is optional
       }
       
       // Actualización inmediata del estado para feedback visual rápido
@@ -578,9 +791,9 @@ const UploadDocumentsPage: React.FC = () => {
       <header className="upload-header">
         <button 
           className="back-button"
-          onClick={() => navigate('/waisechat')}
+          onClick={() => navigate('/dashboard')}
         >
-          ← Volver al Chat
+          ← Dashboard
         </button>
         
         <h1>📤 Subir Documentos</h1>
@@ -635,7 +848,19 @@ const UploadDocumentsPage: React.FC = () => {
         {uploading && (
           <div className="upload-progress">
             <div className="loading-spinner"></div>
-            <p>Subiendo archivos...</p>
+            <p>Subiendo y procesando archivos...</p>
+            {processingFiles.size > 0 && (
+              <div className="processing-files">
+                <p>Procesando con OCR: {processingFiles.size} archivo(s)</p>
+                <div className="processing-list">
+                  {Array.from(processingFiles).map(fileId => (
+                    <div key={fileId} className="processing-item">
+                      📄 {fileId.split('/').pop()} - Extrayendo texto...
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -693,6 +918,27 @@ const UploadDocumentsPage: React.FC = () => {
                         <>
                           <p>{formatFileSize(file.size)}</p>
                           <p>{formatDate(file.uploadedAt)}</p>
+                          {/* OCR/RAG Status */}
+                          {processingFiles.has(`${currentPath}/${file.name}`) && (
+                            <p className="ocr-status processing">
+                              🔄 Procesando OCR...
+                            </p>
+                          )}
+                          {file.isProcessed && (
+                            <p className="ocr-status completed">
+                              ✅ OCR: {Math.round((file.ocrConfidence || 0) * 100)}% confianza
+                            </p>
+                          )}
+                          {file.hasVectors && (
+                            <p className="ocr-status vectorized">
+                              🧠 RAG: Vectorizado
+                            </p>
+                          )}
+                          {file.processingStatus === 'failed' && (
+                            <p className="ocr-status failed">
+                              ❌ Error en procesamiento
+                            </p>
+                          )}
                         </>
                       )}
                       {file.type === 'folder' && <p>Carpeta</p>}
@@ -749,17 +995,50 @@ const UploadDocumentsPage: React.FC = () => {
             )}
           </div>
         )}
+
+        {/* OCR/RAG Statistics */}
+        {ocrStats && (
+          <div className="ocr-stats-container">
+            <h3>📊 Estadísticas OCR/RAG</h3>
+            <div className="stats-grid">
+              <div className="stat-item">
+                <div className="stat-value">{ocrStats.totalDocuments}</div>
+                <div className="stat-label">Total Documentos</div>
+              </div>
+              <div className="stat-item">
+                <div className="stat-value">{ocrStats.processedDocuments}</div>
+                <div className="stat-label">Procesados</div>
+              </div>
+              <div className="stat-item">
+                <div className="stat-value">{ocrStats.pendingDocuments}</div>
+                <div className="stat-label">Pendientes</div>
+              </div>
+              <div className="stat-item">
+                <div className="stat-value">{Math.round(ocrStats.averageConfidence * 100)}%</div>
+                <div className="stat-label">Confianza Promedio</div>
+              </div>
+              <div className="stat-item">
+                <div className="stat-value">{ocrStats.totalVectors}</div>
+                <div className="stat-label">Vectores RAG</div>
+              </div>
+              <div className="stat-item">
+                <div className="stat-value">{ocrStats.storageUsed}</div>
+                <div className="stat-label">Almacenamiento</div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Create Folder Modal */}
       {showCreateFolder && (
-        <div className="modal-overlay" onClick={() => setShowCreateFolder(false)}>
+        <div className="modal-overlay" onClick={() => {setShowCreateFolder(false); setError('');}}>
           <div className="create-folder-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3>Crear Nueva Carpeta</h3>
               <button 
                 className="close-modal-button"
-                onClick={() => setShowCreateFolder(false)}
+                onClick={() => {setShowCreateFolder(false); setError('');}}
               >
                 ✕
               </button>
@@ -768,15 +1047,28 @@ const UploadDocumentsPage: React.FC = () => {
               <input
                 type="text"
                 value={newFolderName}
-                onChange={(e) => setNewFolderName(e.target.value)}
+                onChange={(e) => {
+                  setNewFolderName(e.target.value);
+                  setError(''); // Limpiar error al escribir
+                }}
                 placeholder="Nombre de la carpeta"
                 className="folder-name-input"
                 autoFocus
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter' && newFolderName.trim()) {
+                    createFolder();
+                  }
+                }}
               />
+              {error && (
+                <div className="modal-error-message">
+                  <span>⚠️ {error}</span>
+                </div>
+              )}
               <div className="modal-actions">
                 <button 
                   className="cancel-button"
-                  onClick={() => setShowCreateFolder(false)}
+                  onClick={() => {setShowCreateFolder(false); setError('');}}
                 >
                   Cancelar
                 </button>

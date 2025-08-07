@@ -500,26 +500,27 @@ export class TextCleanerService {
     console.log(`[TextCleaner] 🗑️ Eliminado: ${stats.removedItems.folioReferences} folios, ${stats.removedItems.repertorioCodes} repertorios, ${stats.removedItems.marginalNumbers} números marginales`);
     console.log(`[TextCleaner] 🛡️ Preservado: ${stats.preservedItems.dates} fechas, ${stats.preservedItems.names} nombres`);
     
-    console.log(`[TextCleaner] 📝 ANTES: ${originalSample}...`);
-    console.log(`[TextCleaner] ✨ DESPUÉS: ${cleanedSample}...`);
+    console.log(`[TextCleaner] 📝 ANTES (muestra): ${originalSample}...`);
+    console.log(`[TextCleaner] ✨ DESPUÉS (muestra): ${cleanedSample}...`);
   }
 
-  // ===== MÉTODO DE TESTING =====
-
-  testCleaner(): void {
-    const testCases = [
-      'Impedimentu uno del hotel respectivo, en los Canales, F 5362 F de 19 de Diciembre a 15. 5120 x 2 10237 de 1947, en el F 17169 F 185 de 1947 ante el referido immable se ha construido un motario Don José',
-      'WASHINGTON BAUDILIO DROGUETT PÉREZ R.U.N. : 5.049.865-4 Fecha nacimiento : 9 Mayo 1944',
-      'POR ESCRITURA PUBLICA DE FECHA 20-09-1993 OTORGADA ANTE EL NOTARIO DE SANTIAGO DON HUMBERTO SANTELICES'
-    ];
-
-    console.log(`[TextCleaner] 🧪 Ejecutando pruebas de limpieza...`);
-    
-    testCases.forEach((testCase, index) => {
-      console.log(`\n[TextCleaner] Test ${index + 1}:`);
-      const result = this.cleanOCRText(testCase);
-      console.log(`Input:  ${testCase}`);
-      console.log(`Output: ${result.cleanText}`);
-    });
+  // ===== MÉTODO PARA LOGGING COMPLETO =====
+  
+  logFullText(originalText: string, cleanedText: string, title: string = "TEXTO COMPLETO"): void {
+    console.log(`\n${'='.repeat(80)}`);
+    console.log(`[TextCleaner] 📄 ${title} - TEXTO ORIGINAL COMPLETO:`);
+    console.log(`${'='.repeat(80)}`);
+    console.log(originalText);
+    console.log(`\n${'='.repeat(80)}`);
+    console.log(`[TextCleaner] ✨ ${title} - TEXTO LIMPIO COMPLETO:`);
+    console.log(`${'='.repeat(80)}`);
+    console.log(cleanedText);
+    console.log(`${'='.repeat(80)}\n`);
   }
+
+  // ===== MÉTODOS DE TESTING MOVIDOS A src/tests/ =====
+  // Los tests ahora están organizados en:
+  // - src/tests/text-cleaner/handwriting-correction.test.ts
+  // - src/tests/test-runner.ts
+  // Usar: npm run test:handwriting
 }

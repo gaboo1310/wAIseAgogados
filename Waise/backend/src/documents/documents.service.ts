@@ -1,26 +1,46 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { SaveDocumentDto, GetDocumentsDto, DocumentMetadata, SavedDocumentDto } from './dtos';
 import * as AWS from 'aws-sdk';
+import * as fs from 'fs';
+import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class DocumentsService {
   private s3: AWS.S3;
   private bucketName: string;
+  private useLocalStorage: boolean;
+  private localStoragePath: string;
 
   constructor() {
     console.log('🔧 DocumentsService Constructor');
-    console.log('AWS_ACCESS_KEY_ID:', process.env.AWS_ACCESS_KEY_ID ? 'SET' : 'NOT SET');
-    console.log('AWS_SECRET_ACCESS_KEY:', process.env.AWS_SECRET_ACCESS_KEY ? 'SET' : 'NOT SET');
-    console.log('AWS_REGION:', process.env.AWS_REGION);
-    console.log('AWS_S3_BUCKET_NAME:', process.env.AWS_S3_BUCKET_NAME);
     
-    this.s3 = new AWS.S3({
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-      region: process.env.AWS_REGION || 'us-east-1',
-    });
-    this.bucketName = process.env.AWS_S3_BUCKET_NAME || 'marval-documents';
+    // Check if we should use local storage
+    this.useLocalStorage = process.env.USE_LOCAL_STORAGE === 'true' || !process.env.AWS_ACCESS_KEY_ID;
+    this.localStoragePath = process.env.LOCAL_STORAGE_PATH || 'uploads';
+    
+    if (this.useLocalStorage) {
+      console.log('📁 Using local file storage for documents');
+      console.log('- Local storage path:', this.localStoragePath);
+      
+      // Ensure uploads directory exists
+      if (!fs.existsSync(this.localStoragePath)) {
+        fs.mkdirSync(this.localStoragePath, { recursive: true });
+      }
+    } else {
+      console.log('☁️ Using AWS S3 storage for documents');
+      console.log('AWS_ACCESS_KEY_ID:', process.env.AWS_ACCESS_KEY_ID ? 'SET' : 'NOT SET');
+      console.log('AWS_SECRET_ACCESS_KEY:', process.env.AWS_SECRET_ACCESS_KEY ? 'SET' : 'NOT SET');
+      console.log('AWS_REGION:', process.env.AWS_REGION);
+      console.log('AWS_S3_BUCKET_NAME:', process.env.AWS_S3_BUCKET_NAME);
+      
+      this.s3 = new AWS.S3({
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+        region: process.env.AWS_REGION || 'us-east-1',
+      });
+      this.bucketName = process.env.AWS_S3_BUCKET_NAME || 'marval-documents';
+    }
   }
 
   async saveDocument(saveDocumentDto: SaveDocumentDto, userId: string): Promise<{ id: string; message: string }> {
@@ -28,6 +48,64 @@ export class DocumentsService {
     console.log('UserId:', userId);
     console.log('Document:', saveDocumentDto);
     
+    if (this.useLocalStorage) {
+      return this.saveDocumentLocal(saveDocumentDto, userId);
+    } else {
+      return this.saveDocumentS3(saveDocumentDto, userId);
+    }
+  }
+
+  private async saveDocumentLocal(saveDocumentDto: SaveDocumentDto, userId: string): Promise<{ id: string; message: string }> {
+    try {
+      const now = new Date().toISOString();
+      const documentId = saveDocumentDto.id || uuidv4();
+      
+      // Buscar documento existente si se proporciona ID
+      let existingDocument: SavedDocumentDto | null = null;
+      if (saveDocumentDto.id) {
+        try {
+          existingDocument = await this.getDocumentFromLocal(documentId, userId);
+        } catch (error) {
+          // El documento no existe, crear uno nuevo
+        }
+      }
+
+      const document: SavedDocumentDto = {
+        id: documentId,
+        title: saveDocumentDto.title,
+        content: saveDocumentDto.content,
+        templateId: saveDocumentDto.templateId,
+        templateName: saveDocumentDto.templateName,
+        createdAt: existingDocument?.createdAt || now,
+        updatedAt: now,
+        userId: userId
+      };
+
+      const userDir = this.getLocalUserDir(userId);
+      const documentPath = path.join(userDir, 'documents');
+      const filePath = path.join(documentPath, `${documentId}.json`);
+      
+      // Ensure directories exist
+      if (!fs.existsSync(documentPath)) {
+        fs.mkdirSync(documentPath, { recursive: true });
+      }
+
+      console.log('📤 Saving to local storage...');
+      fs.writeFileSync(filePath, JSON.stringify(document, null, 2));
+      console.log('✅ Local save successful');
+
+      return {
+        id: documentId,
+        message: existingDocument ? 'Documento actualizado exitosamente' : 'Documento guardado exitosamente'
+      };
+
+    } catch (error) {
+      console.error('❌ Error saving document locally:', error);
+      throw new BadRequestException(`Error guardando el documento: ${error.message}`);
+    }
+  }
+
+  private async saveDocumentS3(saveDocumentDto: SaveDocumentDto, userId: string): Promise<{ id: string; message: string }> {
     try {
       const now = new Date().toISOString();
       const documentId = saveDocumentDto.id || uuidv4();
@@ -85,6 +163,66 @@ export class DocumentsService {
   }
 
   async getDocuments(userId: string): Promise<GetDocumentsDto> {
+    if (this.useLocalStorage) {
+      return this.getDocumentsLocal(userId);
+    } else {
+      return this.getDocumentsS3(userId);
+    }
+  }
+
+  private async getDocumentsLocal(userId: string): Promise<GetDocumentsDto> {
+    try {
+      const userDir = this.getLocalUserDir(userId);
+      const documentsDir = path.join(userDir, 'documents');
+      
+      const documents: DocumentMetadata[] = [];
+      
+      // Ensure documents directory exists
+      if (!fs.existsSync(documentsDir)) {
+        fs.mkdirSync(documentsDir, { recursive: true });
+      }
+
+      // Read all JSON files in the documents directory
+      const files = fs.readdirSync(documentsDir);
+      
+      for (const file of files) {
+        if (file.endsWith('.json')) {
+          try {
+            const filePath = path.join(documentsDir, file);
+            const stats = fs.statSync(filePath);
+            const content = fs.readFileSync(filePath, 'utf8');
+            const document: SavedDocumentDto = JSON.parse(content);
+            
+            documents.push({
+              id: document.id,
+              title: document.title || 'Documento sin título',
+              templateName: document.templateName || undefined,
+              createdAt: document.createdAt,
+              updatedAt: document.updatedAt,
+              size: stats.size
+            });
+          } catch (error) {
+            console.error(`Error reading document ${file}:`, error);
+            // Skip corrupted files
+          }
+        }
+      }
+
+      // Sort by updatedAt descending
+      documents.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+
+      return {
+        documents,
+        totalCount: documents.length
+      };
+
+    } catch (error) {
+      console.error('❌ Error obteniendo documentos locales:', error);
+      throw new BadRequestException('Error obteniendo documentos');
+    }
+  }
+
+  private async getDocumentsS3(userId: string): Promise<GetDocumentsDto> {
     try {
       const prefix = this.getUserSessionPrefix(userId);
       
@@ -139,10 +277,43 @@ export class DocumentsService {
   }
 
   async getDocument(documentId: string, userId: string): Promise<SavedDocumentDto> {
-    return await this.getDocumentFromS3(documentId, userId);
+    if (this.useLocalStorage) {
+      return await this.getDocumentFromLocal(documentId, userId);
+    } else {
+      return await this.getDocumentFromS3(documentId, userId);
+    }
   }
 
   async deleteDocument(documentId: string, userId: string): Promise<{ message: string }> {
+    if (this.useLocalStorage) {
+      return this.deleteDocumentLocal(documentId, userId);
+    } else {
+      return this.deleteDocumentS3(documentId, userId);
+    }
+  }
+
+  private async deleteDocumentLocal(documentId: string, userId: string): Promise<{ message: string }> {
+    try {
+      const userDir = this.getLocalUserDir(userId);
+      const documentPath = path.join(userDir, 'documents', `${documentId}.json`);
+      
+      if (!fs.existsSync(documentPath)) {
+        throw new NotFoundException('Documento no encontrado');
+      }
+
+      fs.unlinkSync(documentPath);
+
+      return { message: 'Documento eliminado exitosamente' };
+    } catch (error) {
+      console.error('Error eliminando documento local:', error);
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new BadRequestException('Error eliminando el documento');
+    }
+  }
+
+  private async deleteDocumentS3(documentId: string, userId: string): Promise<{ message: string }> {
     try {
       const key = this.getDocumentKey(userId, documentId);
       
@@ -158,6 +329,33 @@ export class DocumentsService {
       console.error('Error eliminando documento de S3:', error);
       throw new BadRequestException('Error eliminando el documento');
     }
+  }
+
+  private async getDocumentFromLocal(documentId: string, userId: string): Promise<SavedDocumentDto> {
+    try {
+      const userDir = this.getLocalUserDir(userId);
+      const documentPath = path.join(userDir, 'documents', `${documentId}.json`);
+      
+      if (!fs.existsSync(documentPath)) {
+        throw new NotFoundException('Documento no encontrado');
+      }
+
+      const content = fs.readFileSync(documentPath, 'utf8');
+      const document = JSON.parse(content);
+      return document;
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      console.error('Error obteniendo documento local:', error);
+      throw new BadRequestException('Error obteniendo el documento');
+    }
+  }
+
+  private getLocalUserDir(userId: string): string {
+    // Sanitize userId for Windows filesystem - replace invalid characters
+    const sanitizedUserId = userId.replace(/[|<>:"/\\*?]/g, '_');
+    return path.join(this.localStoragePath, sanitizedUserId);
   }
 
   private async getDocumentFromS3(documentId: string, userId: string): Promise<SavedDocumentDto> {
@@ -195,6 +393,15 @@ export class DocumentsService {
   }
 
   async testS3Connection(): Promise<any> {
+    if (this.useLocalStorage) {
+      return {
+        success: true,
+        message: 'Using local file storage - S3 test not applicable',
+        storage: 'local',
+        path: this.localStoragePath
+      };
+    }
+
     try {
       console.log('🔍 Testing S3 Configuration:');
       console.log('Bucket Name:', this.bucketName);

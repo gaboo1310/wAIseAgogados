@@ -113,4 +113,41 @@ export class OcrController {
       throw new BadRequestException(`OCR processing failed: ${error.message}`);
     }
   }
+
+  @Get('stats')
+  async getOCRStats() {
+    console.log('[OCR Controller] Getting OCR statistics');
+    
+    try {
+      // Esta es una implementación básica - en producción podrías
+      // conectar con una base de datos o servicio de estadísticas real
+      const stats = {
+        totalDocuments: 0,
+        processedDocuments: 0,
+        pendingDocuments: 0,
+        averageConfidence: 0,
+        totalVectors: 0,
+        storageUsed: '0 MB'
+      };
+
+      return {
+        success: true,
+        ...stats,
+        lastUpdated: new Date().toISOString()
+      };
+
+    } catch (error) {
+      console.error('[OCR Controller] Error getting stats:', error);
+      return {
+        success: false,
+        error: error.message,
+        totalDocuments: 0,
+        processedDocuments: 0,
+        pendingDocuments: 0,
+        averageConfidence: 0,
+        totalVectors: 0,
+        storageUsed: '0 MB'
+      };
+    }
+  }
 }

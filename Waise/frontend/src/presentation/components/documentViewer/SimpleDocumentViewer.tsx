@@ -21,13 +21,58 @@ export const SimpleDocumentViewer: React.FC<SimpleDocumentViewerProps> = ({
   const [error, setError] = useState<string>('');
 
   useEffect(() => {
-    const getSignedUrl = async () => {
+    const getFileContent = async () => {
       try {
-        console.log('🔗 Getting signed URL for:', filePath);
+        console.log('🔗 Getting file content for:', filePath);
         
         const token = await getAccessTokenSilently();
-        const response = await fetch(
-          `${import.meta.env.VITE_API_URL}/uploads/signed-url/${encodeURIComponent(filePath)}`, 
+        
+        // First try to get a signed URL for S3 files
+        try {
+          const urlResponse = await fetch(
+            `${import.meta.env.VITE_API_URL}/uploads/signed-url/${encodeURIComponent(filePath)}`, 
+            {
+              headers: {
+                'Authorization': `Bearer ${token}`,
+              },
+            }
+          );
+
+          if (urlResponse.ok) {
+            const data = await urlResponse.json();
+            console.log('✅ Signed URL received:', data.url);
+            
+            // Check if it's a relative URL (local storage)
+            if (data.url.startsWith('/api/') || data.url.startsWith('http://localhost')) {
+              // For local storage, fetch the file content and create a blob URL for inline viewing
+              const fileResponse = await fetch(data.url, {
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                },
+              });
+              
+              if (!fileResponse.ok) {
+                throw new Error('Error fetching file content');
+              }
+              
+              const blob = await fileResponse.blob();
+              const blobUrl = URL.createObjectURL(blob);
+              setSignedUrl(blobUrl);
+            } else {
+              // For S3, use the signed URL directly
+              setSignedUrl(data.url);
+            }
+            
+            setLoading(false);
+            return;
+          }
+        } catch (urlError) {
+          console.log('⚠️ Signed URL approach failed, trying direct download:', urlError);
+        }
+        
+        // Fallback: Direct view approach
+        const viewResponse = await fetch(
+          `${import.meta.env.VITE_API_URL}/uploads/view/${encodeURIComponent(filePath)}`, 
           {
             headers: {
               'Authorization': `Bearer ${token}`,
@@ -35,16 +80,18 @@ export const SimpleDocumentViewer: React.FC<SimpleDocumentViewerProps> = ({
           }
         );
 
-        if (!response.ok) {
-          throw new Error('Error obteniendo URL firmada');
+        if (!viewResponse.ok) {
+          throw new Error('Error viewing file');
         }
 
-        const data = await response.json();
-        console.log('✅ Signed URL received:', data.url);
-        setSignedUrl(data.url);
+        const blob = await viewResponse.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        console.log('✅ File blob URL created for viewing');
+        setSignedUrl(blobUrl);
         setLoading(false);
+        
       } catch (error) {
-        console.error('❌ Error getting signed URL:', error);
+        console.error('❌ Error getting file content:', error);
         const errorMsg = 'Error cargando el archivo';
         setError(errorMsg);
         setLoading(false);
@@ -52,7 +99,14 @@ export const SimpleDocumentViewer: React.FC<SimpleDocumentViewerProps> = ({
       }
     };
 
-    getSignedUrl();
+    getFileContent();
+    
+    // Cleanup blob URL when component unmounts
+    return () => {
+      if (signedUrl && signedUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(signedUrl);
+      }
+    };
   }, [filePath, getAccessTokenSilently, onError]);
 
   const renderViewer = () => {

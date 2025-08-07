@@ -84,9 +84,9 @@ const DocumentGeneratorPage: React.FC = () => {
       <header className="page-header">
         <button 
           className="back-button"
-          onClick={() => navigate('/waisechat')}
+          onClick={() => navigate('/dashboard')}
         >
-          ← Volver al Chat
+          ← Volver al Dashboard
         </button>
         <h1>Generador de Documentos Legales</h1>
         <p>Selecciona una plantilla para generar documentos legales con IA</p>

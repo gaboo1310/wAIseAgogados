@@ -3,13 +3,13 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import LoginPages from "../auth/pages/LoginPages";
 
 import WelcomePage from "../presentation/pages/welcome/WelcomePage";
+import DashboardPage from "../presentation/pages/dashboard/DashboardPage";
 import WaiseChatPage from "../presentation/pages/waisechat/WaiseChatPage";
 import DocumentGeneratorPage from "../presentation/pages/document-generator/DocumentGeneratorPage";
 import DocumentEditorPage from "../presentation/pages/document-editor/DocumentEditorPage";
 import DocumentViewerPage from "../presentation/pages/document-viewer/DocumentViewerPage";
 import SavedDocumentsPage from "../presentation/pages/saved-documents/SavedDocumentsPage";
 import UploadDocumentsPage from "../presentation/pages/upload-documents/UploadDocumentsPage";
-import OCRDocumentsPage from "../presentation/pages/ocr-documents/OCRDocumentsPage";
 
 
 
@@ -25,7 +25,7 @@ const HomeRedirect = () => {
   if (isLoading) return <div>Cargando...</div>;
   
   if (isAuthenticated && user) {
-    return <Navigate to="/waisechat" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
   
   return <Navigate to="/welcome" replace />;
@@ -40,6 +40,10 @@ export const AppRouter = () => {
       {/* Resto de tus rutas */}
       <Route path="/welcome" element={<WelcomePage />} />
       <Route path="/login" element={<LoginPages />} />
+      <Route 
+        path="/dashboard" 
+        element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} 
+      />
       <Route 
         path="/waisechat" 
         element={<ProtectedRoute><WaiseChatPage /></ProtectedRoute>} 
@@ -63,10 +67,6 @@ export const AppRouter = () => {
       <Route 
         path="/upload-documents" 
         element={<ProtectedRoute><UploadDocumentsPage /></ProtectedRoute>} 
-      />
-      <Route 
-        path="/ocr-documents" 
-        element={<ProtectedRoute><OCRDocumentsPage /></ProtectedRoute>} 
       />
       
       <Route path="*" element={<Navigate to="/welcome" replace />} />

@@ -222,9 +222,9 @@ const SavedDocumentsPage: React.FC = () => {
       <header className="saved-docs-header">
         <button 
           className="back-button"
-          onClick={() => navigate('/waisechat')}
+          onClick={() => navigate('/dashboard')}
         >
-          ← Volver al Chat
+          ← Dashboard
         </button>
         
         <h1>📁 Archivos Guardados</h1>

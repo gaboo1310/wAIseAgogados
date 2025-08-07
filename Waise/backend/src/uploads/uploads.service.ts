@@ -193,41 +193,77 @@ export class UploadsService {
         throw new BadRequestException('Nombre de carpeta inválido');
       }
 
-      // Crear un objeto marcador para la carpeta (S3 no tiene carpetas reales)
-      const folderPath = path ? `${path}/${folderName}` : folderName;
-      const s3Key = this.getFolderKey(userId, folderPath);
-
-      console.log('Folder S3 Key:', s3Key);
-
-      const uploadParams = {
-        Bucket: this.bucketName,
-        Key: s3Key,
-        Body: '',
-        ContentType: 'application/x-directory',
-        Metadata: {
-          userId: userId,
-          folderName: folderName,
-          createdAt: new Date().toISOString(),
-          path: folderPath,
-          type: 'folder'
-        }
-      };
-
-      await this.s3.upload(uploadParams).promise();
-      console.log('✅ Folder created successfully');
-
-      return {
-        name: folderName,
-        path: folderPath,
-        type: 'folder',
-        createdAt: new Date().toISOString(),
-        message: 'Carpeta creada exitosamente'
-      };
+      if (this.useLocalStorage) {
+        return this.createFolderLocal(folderName, path, userId);
+      } else {
+        return this.createFolderS3(folderName, path, userId);
+      }
 
     } catch (error) {
       console.error('❌ Error creating folder:', error);
       throw new BadRequestException('Error creando la carpeta');
     }
+  }
+
+  private async createFolderLocal(folderName: string, requestPath: string, userId: string) {
+    console.log('📁 Creating folder locally');
+    
+    const folderPath = requestPath ? `${requestPath}/${folderName}` : folderName;
+    const userDir = this.getLocalUserDir(userId);
+    const fullFolderPath = path.join(userDir, folderPath);
+
+    console.log('Local folder path:', fullFolderPath);
+
+    // Verificar si ya existe
+    if (fs.existsSync(fullFolderPath)) {
+      throw new BadRequestException('Ya existe una carpeta con ese nombre');
+    }
+
+    // Crear directorio
+    fs.mkdirSync(fullFolderPath, { recursive: true });
+    console.log('✅ Local folder created successfully');
+
+    return {
+      name: folderName,
+      path: folderPath,
+      type: 'folder',
+      createdAt: new Date().toISOString(),
+      message: 'Carpeta creada exitosamente'
+    };
+  }
+
+  private async createFolderS3(folderName: string, requestPath: string, userId: string) {
+    console.log('📁 Creating folder in S3');
+    
+    const folderPath = requestPath ? `${requestPath}/${folderName}` : folderName;
+    const s3Key = this.getFolderKey(userId, folderPath);
+
+    console.log('Folder S3 Key:', s3Key);
+
+    const uploadParams = {
+      Bucket: this.bucketName,
+      Key: s3Key,
+      Body: '',
+      ContentType: 'application/x-directory',
+      Metadata: {
+        userId: userId,
+        folderName: folderName,
+        createdAt: new Date().toISOString(),
+        path: folderPath,
+        type: 'folder'
+      }
+    };
+
+    await this.s3.upload(uploadParams).promise();
+    console.log('✅ S3 folder created successfully');
+
+    return {
+      name: folderName,
+      path: folderPath,
+      type: 'folder',
+      createdAt: new Date().toISOString(),
+      message: 'Carpeta creada exitosamente'
+    };
   }
 
   async listFiles(requestPath: string, userId: string) {
@@ -501,24 +537,57 @@ export class UploadsService {
     try {
       console.log('🗑️ Deleting file:', filePath, 'for user:', userId);
       
-      const key = this.getFileKey(userId, filePath);
-      
-      const deleteParams = {
-        Bucket: this.bucketName,
-        Key: key
-      };
-
-      await this.s3.deleteObject(deleteParams).promise();
-      
-      console.log('✅ File deleted successfully');
-      return {
-        success: true,
-        message: 'Archivo eliminado exitosamente'
-      };
+      if (this.useLocalStorage) {
+        return this.deleteFileLocal(filePath, userId);
+      } else {
+        return this.deleteFileS3(filePath, userId);
+      }
     } catch (error) {
       console.error('❌ Error deleting file:', error);
       throw new BadRequestException('Error eliminando el archivo');
     }
+  }
+
+  private async deleteFileLocal(filePath: string, userId: string): Promise<{ success: boolean; message: string }> {
+    console.log('🗑️ Deleting file locally');
+    
+    const userDir = this.getLocalUserDir(userId);
+    const fullFilePath = path.join(userDir, filePath);
+    
+    console.log('Local file path:', fullFilePath);
+
+    // Verificar que el archivo existe
+    if (!fs.existsSync(fullFilePath)) {
+      throw new NotFoundException('El archivo no existe');
+    }
+
+    // Eliminar el archivo
+    fs.unlinkSync(fullFilePath);
+    console.log('✅ File deleted successfully locally');
+
+    return {
+      success: true,
+      message: 'Archivo eliminado exitosamente'
+    };
+  }
+
+  private async deleteFileS3(filePath: string, userId: string): Promise<{ success: boolean; message: string }> {
+    console.log('🗑️ Deleting file in S3');
+    
+    const key = this.getFileKey(userId, filePath);
+    
+    const deleteParams = {
+      Bucket: this.bucketName,
+      Key: key
+    };
+
+    await this.s3.deleteObject(deleteParams).promise();
+    
+    console.log('✅ File deleted successfully in S3');
+    return {
+      success: true,
+      message: 'Archivo eliminado exitosamente'
+    };
   }
 
   async getSignedUrl(filePath: string, userId: string): Promise<{ url: string; expiresIn: number }> {
@@ -545,14 +614,15 @@ export class UploadsService {
       throw new NotFoundException('Archivo no encontrado');
     }
     
-    // For local storage, return a download endpoint URL
-    // The frontend will call the download endpoint
-    const localUrl = `/api/uploads/download/${encodeURIComponent(filePath)}?userId=${encodeURIComponent(userId)}`;
+    // For local storage, return a view endpoint URL for inline viewing
+    // The frontend will call the view endpoint with authentication
+    const baseUrl = process.env.BASE_URL || `http://localhost:${process.env.PORT || 3000}`;
+    const localUrl = `${baseUrl}/api/uploads/view/${encodeURIComponent(filePath)}`;
     
-    console.log('✅ Local file URL generated successfully');
+    console.log('✅ Local file URL generated:', localUrl);
     return {
       url: localUrl,
-      expiresIn: 0 // No expiration for local URLs
+      expiresIn: 3600 // 1 hour for consistency
     };
   }
 
@@ -582,54 +652,11 @@ export class UploadsService {
       console.log('To targetPath:', targetPath);
       console.log('User ID:', userId);
       
-      const sourceKey = this.getFileKey(userId, sourcePath);
-      
-      // Manejar el caso donde targetPath está vacío (directorio raíz)
-      const finalTargetPath = targetPath ? `${targetPath}/${fileName}` : fileName;
-      const destinationKey = this.getFileKey(userId, finalTargetPath);
-      
-      console.log('Source S3 Key:', sourceKey);
-      console.log('Destination S3 Key:', destinationKey);
-      console.log('Final target path:', finalTargetPath);
-
-      // Primero verificar que el archivo origen existe
-      try {
-        await this.s3.headObject({
-          Bucket: this.bucketName,
-          Key: sourceKey
-        }).promise();
-      } catch (error) {
-        if (error.code === 'NoSuchKey') {
-          throw new NotFoundException('El archivo origen no existe');
-        }
-        throw error;
+      if (this.useLocalStorage) {
+        return this.moveFileLocal(sourcePath, targetPath, fileName, userId);
+      } else {
+        return this.moveFileS3(sourcePath, targetPath, fileName, userId);
       }
-
-      // Copiar el archivo a la nueva ubicación
-      const copyParams = {
-        Bucket: this.bucketName,
-        CopySource: `${this.bucketName}/${sourceKey}`,
-        Key: destinationKey
-      };
-
-      await this.s3.copyObject(copyParams).promise();
-      console.log('✅ File copied to destination');
-
-      // Eliminar el archivo original
-      const deleteParams = {
-        Bucket: this.bucketName,
-        Key: sourceKey
-      };
-
-      await this.s3.deleteObject(deleteParams).promise();
-      console.log('✅ Original file deleted');
-      console.log('✅ File move completed successfully');
-      console.log('✅ File should now be at:', destinationKey);
-
-      return {
-        success: true,
-        message: 'Archivo movido exitosamente'
-      };
 
     } catch (error) {
       console.error('❌ Error moving file:', error);
@@ -638,6 +665,94 @@ export class UploadsService {
       }
       throw new BadRequestException('Error moviendo el archivo');
     }
+  }
+
+  private async moveFileLocal(sourcePath: string, targetPath: string, fileName: string, userId: string): Promise<{ success: boolean; message: string }> {
+    console.log('🎯 Moving file locally');
+    
+    const userDir = this.getLocalUserDir(userId);
+    const sourceFilePath = path.join(userDir, sourcePath);
+    
+    // Manejar el caso donde targetPath está vacío (directorio raíz)
+    const finalTargetPath = targetPath ? `${targetPath}/${fileName}` : fileName;
+    const destinationFilePath = path.join(userDir, finalTargetPath);
+    
+    console.log('Source file path:', sourceFilePath);
+    console.log('Destination file path:', destinationFilePath);
+    console.log('Final target path:', finalTargetPath);
+
+    // Verificar que el archivo origen existe
+    if (!fs.existsSync(sourceFilePath)) {
+      throw new NotFoundException('El archivo origen no existe');
+    }
+
+    // Asegurarse de que el directorio destino existe
+    const destinationDir = path.dirname(destinationFilePath);
+    if (!fs.existsSync(destinationDir)) {
+      fs.mkdirSync(destinationDir, { recursive: true });
+    }
+
+    // Mover el archivo (rename en el sistema de archivos)
+    fs.renameSync(sourceFilePath, destinationFilePath);
+    console.log('✅ File moved successfully locally');
+
+    return {
+      success: true,
+      message: 'Archivo movido exitosamente'
+    };
+  }
+
+  private async moveFileS3(sourcePath: string, targetPath: string, fileName: string, userId: string): Promise<{ success: boolean; message: string }> {
+    console.log('🎯 Moving file in S3');
+    
+    const sourceKey = this.getFileKey(userId, sourcePath);
+    
+    // Manejar el caso donde targetPath está vacío (directorio raíz)
+    const finalTargetPath = targetPath ? `${targetPath}/${fileName}` : fileName;
+    const destinationKey = this.getFileKey(userId, finalTargetPath);
+    
+    console.log('Source S3 Key:', sourceKey);
+    console.log('Destination S3 Key:', destinationKey);
+    console.log('Final target path:', finalTargetPath);
+
+    // Primero verificar que el archivo origen existe
+    try {
+      await this.s3.headObject({
+        Bucket: this.bucketName,
+        Key: sourceKey
+      }).promise();
+    } catch (error) {
+      if (error.code === 'NoSuchKey') {
+        throw new NotFoundException('El archivo origen no existe');
+      }
+      throw error;
+    }
+
+    // Copiar el archivo a la nueva ubicación
+    const copyParams = {
+      Bucket: this.bucketName,
+      CopySource: `${this.bucketName}/${sourceKey}`,
+      Key: destinationKey
+    };
+
+    await this.s3.copyObject(copyParams).promise();
+    console.log('✅ File copied to destination');
+
+    // Eliminar el archivo original
+    const deleteParams = {
+      Bucket: this.bucketName,
+      Key: sourceKey
+    };
+
+    await this.s3.deleteObject(deleteParams).promise();
+    console.log('✅ Original file deleted');
+    console.log('✅ File move completed successfully');
+    console.log('✅ File should now be at:', destinationKey);
+
+    return {
+      success: true,
+      message: 'Archivo movido exitosamente'
+    };
   }
 
   async deleteFolder(folderPath: string, userId: string): Promise<{ success: boolean; message: string; deletedCount: number }> {

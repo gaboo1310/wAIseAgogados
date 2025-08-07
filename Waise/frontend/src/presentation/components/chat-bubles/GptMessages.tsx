@@ -340,12 +340,12 @@ const GptMessages = ({ text, iconSrc, isLastMessage }: Props) => {
   const blocks = extractMarkdownBlocks(cleanText);
 
   return (
-    <div className="col-start-1 col-end-10 p-3 rounded-lg" ref={messageRef}>
-      <div className="flex flex-row items-start">
-      <div className="flex items-center justify-center h-12 w-12 min-h-12 min-w-12 rounded-full border border-gray-600">
-          <img src={iconSrc} alt="AI Icon" className="h-10 w-10" />
+    <div className="gpt-message-container" ref={messageRef}>
+      <div className="gpt-message-wrapper">
+        <div className="gpt-avatar">
+          <img src={iconSrc} alt="AI Icon" className="avatar-image" />
         </div>
-        <div className="relative ml-3 text-base text-black pt-3 pb-2 px-4 leading-relaxed break-words overflow-wrap">
+        <div className="gpt-content">
           {blocks.map((block, index) => {
             if (block.type === 'table') {
               return <MarkdownTableRenderer key={index} markdown={block.content} />;

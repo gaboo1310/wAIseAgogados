@@ -528,7 +528,8 @@ const handlePost = async (message: string, useWebSearch: boolean) => {
           <h2>Iniciando sesión...</h2>
         </div>
       ) : (
-        <div className="chat-main">
+        <div className="chat-wrapper">
+          <div className="chat-main">
           {showFocusingCard && <div className="overlay active" onClick={handleClose}></div>}
           {showFocusingCard && (
             <div className="focusing-card">
@@ -724,6 +725,12 @@ const handlePost = async (message: string, useWebSearch: boolean) => {
                 </div>
               )}
             </div>
+            <div className="dashboard-button-container">
+              <button className="dashboard-return-btn" onClick={() => navigate("/dashboard")}>
+                <img src="/icons/dashboard.svg" alt="Dashboard" />
+                <span>Volver al Dashboard</span>
+              </button>
+            </div>
           </div>
 
           <div className="chat-button-content">
@@ -740,52 +747,13 @@ const handlePost = async (message: string, useWebSearch: boolean) => {
           >
             <div className="icon-with-text">
               {showNewIcon ? (
-                <img src="/icons/circle.svg" alt="circle" className="circle-icon" />
+                <span className="internet-icon-on">🌐</span>
               ) : (
-                <img src="/icons/worldoff.svg" alt="new icon" className="circleoff-icon" />
+                <span className="internet-icon-off">🌐</span>
               )}
               <span className="icon-text">Buscar en<br /> internet</span>
             </div>
           </button>
-              <div style={{width: '20px'}}></div>
-              <div style={{display: 'flex', gap: '5px'}}>
-                <button
-                  onClick={() => navigate('/upload-documents')}
-                  className="icon-button"
-                >
-                  <div className="icon-with-text">
-                    <div className="circle-icon" style={{display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px'}}>📤</div>
-                    <span className="icon-text">Subir<br /> documentos</span>
-                  </div>
-                </button>
-                <button
-                  onClick={() => navigate('/document-generator')}
-                  className="icon-button"
-                >
-                  <div className="icon-with-text">
-                    <img src="/icons/save.svg" alt="generar documentos" className="circle-icon" />
-                    <span className="icon-text">Generar<br /> documentos</span>
-                  </div>
-                </button>
-                <button
-                  onClick={() => navigate('/saved-documents')}
-                  className="icon-button"
-                >
-                  <div className="icon-with-text">
-                    <div className="circle-icon" style={{display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px'}}>📁</div>
-                    <span className="icon-text">Archivos<br /> guardados</span>
-                  </div>
-                </button>
-                <button
-                  onClick={() => navigate('/ocr-documents')}
-                  className="icon-button"
-                >
-                  <div className="icon-with-text">
-                    <div className="circle-icon" style={{display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px'}}>🔍</div>
-                    <span className="icon-text">Procesar<br /> OCR</span>
-                  </div>
-                </button>
-              </div>
               <UserDropdown />
             </div>
             <div className="chat-content">
@@ -813,9 +781,6 @@ const handlePost = async (message: string, useWebSearch: boolean) => {
                 </div>
               )}
               <div className="chat-input-container">
-                <button className='paperclip' onClick={() => setShowBar(!showBar)}>
-
-                </button>
                 {showSuccessCard && <div className="overlay active" onClick={handleClose}></div>}
                 {showSuccessCard && (
                   <div className="success-card">
@@ -833,6 +798,7 @@ const handlePost = async (message: string, useWebSearch: boolean) => {
               </div>
             </div>
           </div>
+        </div>
         </div>
       )}
     </div>
