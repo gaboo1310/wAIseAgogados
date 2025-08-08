@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth0 } from '@auth0/auth0-react';
 import './documentEditor.css';
+import './vscode-sidebar.css';
 
 interface FileItem {
   id: string;
@@ -702,6 +703,7 @@ const DocumentEditorPage: React.FC = () => {
     if (isFolder) {
       // Si es carpeta, seleccionar/deseleccionar todos los archivos dentro
       const toggleFolderFiles = (folderPath: string, select: boolean) => {
+        // Buscar en los archivos principales
         files.forEach(file => {
           if (file.path.startsWith(folderPath + '/')) {
             if (select) {
@@ -711,6 +713,23 @@ const DocumentEditorPage: React.FC = () => {
             }
           }
         });
+        
+        // Buscar en el contenido de carpetas expandidas
+        const contents = folderContents.get(folderPath);
+        if (contents) {
+          contents.forEach(subFile => {
+            if (select) {
+              newSelection.add(subFile.path);
+            } else {
+              newSelection.delete(subFile.path);
+            }
+            
+            // Si el subarchivo es también una carpeta, aplicar recursivamente
+            if (subFile.type === 'folder') {
+              toggleFolderFiles(subFile.path, select);
+            }
+          });
+        }
       };
       
       const isSelected = selectedFiles.has(filePath);
@@ -733,14 +752,39 @@ const DocumentEditorPage: React.FC = () => {
     setSelectedFiles(newSelection);
   };
 
-  const toggleFolderExpansion = (folderPath: string) => {
+  const toggleFolderExpansion = async (folderPath: string) => {
     const newExpanded = new Set(expandedFolders);
+    
     if (expandedFolders.has(folderPath)) {
+      // Contraer carpeta
       newExpanded.delete(folderPath);
+      setExpandedFolders(newExpanded);
     } else {
+      // Expandir carpeta - cargar contenidos si no están cargados
       newExpanded.add(folderPath);
+      setExpandedFolders(newExpanded);
+      
+      // Cargar contenido de la carpeta si no existe
+      if (!folderContents.has(folderPath)) {
+        setLoadingFolders(prev => new Set([...prev, folderPath]));
+        
+        try {
+          const contents = await loadFolderContents(folderPath);
+          setFolderContents(prev => new Map(prev).set(folderPath, contents));
+        } catch (error) {
+          console.error('Error loading folder contents:', error);
+          // Si hay error, quitar de expandidos
+          newExpanded.delete(folderPath);
+          setExpandedFolders(newExpanded);
+        } finally {
+          setLoadingFolders(prev => {
+            const newSet = new Set(prev);
+            newSet.delete(folderPath);
+            return newSet;
+          });
+        }
+      }
     }
-    setExpandedFolders(newExpanded);
   };
 
   const fillDocumentWithAI = async () => {
@@ -853,18 +897,77 @@ const DocumentEditorPage: React.FC = () => {
     }
   };
 
+  // Renderizar item individual con estructura VSCode
+  const renderFileItem = (file: FileItem, nestingLevel: number = 0) => {
+    const isFolder = file.type === 'folder';
+    const isExpanded = expandedFolders.has(file.path);
+    const isSelected = selectedFiles.has(file.path);
+    
+    return (
+      <React.Fragment key={file.path}>
+        <div className={`file-item ${nestingLevel > 0 ? `nested-${nestingLevel}` : ''}`}>
+          <div className={`file-row ${isSelected ? 'selected' : ''}`}>
+            <input
+              type="checkbox"
+              checked={isSelected}
+              onChange={() => toggleFileSelection(file.path, isFolder)}
+              className="file-checkbox"
+            />
+            
+            {/* Expand triangle only for folders */}
+            {isFolder && (
+              <button 
+                className={`expand-triangle ${isExpanded ? 'expanded' : ''}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleFolderExpansion(file.path);
+                }}
+                title={isExpanded ? 'Contraer carpeta' : 'Expandir carpeta'}
+              >
+                ▶
+              </button>
+            )}
+            
+            {/* File icon */}
+            <span className="file-icon">
+              {getFileIcon(file.name, isFolder)}
+            </span>
+            
+            {/* File name */}
+            <span 
+              className={`file-name ${isFolder ? 'folder' : ''}`}
+              onClick={() => isFolder && toggleFolderExpansion(file.path)}
+              title={file.name}
+            >
+              {file.name}
+            </span>
+          </div>
+        </div>
+        
+        {/* Render nested content for expanded folders */}
+        {isFolder && isExpanded && (
+          <>
+            {loadingFolders.has(file.path) ? (
+              <div className={`folder-loading nested-${nestingLevel + 1}`}>
+                <div className="loading-spinner-small"></div>
+                <span>Loading...</span>
+              </div>
+            ) : (
+              folderContents.get(file.path)?.map(subFile => 
+                renderFileItem(subFile, nestingLevel + 1)
+              )
+            )}
+          </>
+        )}
+      </React.Fragment>
+    );
+  };
+
   return (
     <div className="document-editor-page">
       {/* Header */}
       <header className="editor-header">
         <div className="header-left">
-          <button 
-            className="sidebar-toggle-button"
-            onClick={() => setShowSidebar(!showSidebar)}
-            title={showSidebar ? 'Ocultar archivos' : 'Mostrar archivos'}
-          >
-            {showSidebar ? '📁 Ocultar Archivos' : '📂 Mostrar Archivos'}
-          </button>
           <div className="document-info">
             <input
               type="text"
@@ -1029,23 +1132,31 @@ const DocumentEditorPage: React.FC = () => {
 
       {/* Main Content Area */}
       <div className={`editor-main-content ${showSidebar ? 'with-sidebar' : ''}`}>
+        {/* Show Sidebar Button when hidden */}
+        {!showSidebar && (
+          <button 
+            className="show-sidebar-button"
+            onClick={() => setShowSidebar(true)}
+            title="Mostrar explorador"
+          >
+            📁
+          </button>
+        )}
+        
         {/* Files Sidebar */}
         {showSidebar && (
           <div className="files-sidebar">
             <div className="sidebar-header">
-              <h3>📂 Mis Archivos</h3>
-              {selectedFiles.size > 0 && (
-                <div className="sidebar-actions">
-                  <span className="selected-count">{selectedFiles.size} seleccionados</span>
-                  <button 
-                    className="fill-document-button"
-                    onClick={fillDocumentWithAI}
-                    disabled={fillingDocument}
-                  >
-                    {fillingDocument ? '⏳ Rellenando...' : '🤖 Rellenar Documento'}
-                  </button>
-                </div>
-              )}
+              <div className="sidebar-title-row">
+                <h3>📂 MIS ARCHIVOS</h3>
+                <button 
+                  className="sidebar-collapse-button"
+                  onClick={() => setShowSidebar(false)}
+                  title="Contraer"
+                >
+                  ⬅
+                </button>
+              </div>
             </div>
             
             <div className="sidebar-content">
@@ -1064,68 +1175,21 @@ const DocumentEditorPage: React.FC = () => {
                       </button>
                     </div>
                   ) : (
-                    files.map(file => (
-                      <div key={file.path} className="file-item">
-                        <div className="file-row">
-                          <input
-                            type="checkbox"
-                            checked={selectedFiles.has(file.path)}
-                            onChange={() => toggleFileSelection(file.path, file.type === 'folder')}
-                            className="file-checkbox"
-                          />
-                          <div className="file-content" onClick={() => file.type === 'folder' && toggleFolderExpansion(file.path)}>
-                            {file.type === 'folder' && (
-                              <span className="folder-toggle">
-                                {expandedFolders.has(file.path) ? '📂' : '📁'}
-                              </span>
-                            )}
-                            <span className="file-icon">
-                              {file.type === 'folder' ? '📁' : getFileIcon(file.name)}
-                            </span>
-                            <span className="file-name">{file.name}</span>
-                            {file.size && (
-                              <span className="file-size">
-                                {(file.size / 1024 / 1024).toFixed(2)} MB
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        
-                        {/* Mostrar archivos dentro de carpetas expandidas */}
-                        {file.type === 'folder' && expandedFolders.has(file.path) && (
-                          <div className="folder-contents">
-                            {files
-                              .filter(f => f.path.startsWith(file.path + '/') && f.path !== file.path)
-                              .map(subFile => (
-                                <div key={subFile.path} className="file-item nested">
-                                  <div className="file-row">
-                                    <input
-                                      type="checkbox"
-                                      checked={selectedFiles.has(subFile.path)}
-                                      onChange={() => toggleFileSelection(subFile.path)}
-                                      className="file-checkbox"
-                                    />
-                                    <div className="file-content">
-                                      <span className="file-icon">
-                                        {getFileIcon(subFile.name)}
-                                      </span>
-                                      <span className="file-name">{subFile.name}</span>
-                                      {subFile.size && (
-                                        <span className="file-size">
-                                          {(subFile.size / 1024 / 1024).toFixed(2)} MB
-                                        </span>
-                                      )}
-                                    </div>
-                                  </div>
-                                </div>
-                              ))}
-                          </div>
-                        )}
-                      </div>
-                    ))
+                    files.map(file => renderFileItem(file, 0))
                   )}
                 </div>
               )}
+            </div>
+            
+            {/* Fixed bottom button - always visible */}
+            <div className="sidebar-footer">
+              <button 
+                className="fill-document-button fixed-bottom"
+                onClick={fillDocumentWithAI}
+                disabled={fillingDocument || selectedFiles.size === 0}
+              >
+                {fillingDocument ? '⏳ Rellenando...' : '🤖 Rellenar Documento'}
+              </button>
             </div>
           </div>
         )}
@@ -1259,7 +1323,9 @@ const DocumentEditorPage: React.FC = () => {
   );
 };
 
-const getFileIcon = (fileName: string): string => {
+const getFileIcon = (fileName: string, isFolder: boolean = false): string => {
+  if (isFolder) return '📁';
+  
   const extension = fileName.split('.').pop()?.toLowerCase();
   switch (extension) {
     case 'pdf': return '📄';
@@ -1270,6 +1336,9 @@ const getFileIcon = (fileName: string): string => {
     case 'jpeg':
     case 'png':
     case 'gif': return '🖼️';
+    case 'js':
+    case 'ts': return '📜';
+    case 'json': return '📋';
     default: return '📄';
   }
 };
